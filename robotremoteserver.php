@@ -15,7 +15,7 @@ require_once "xmlrpclib/xmlrpcs.inc";    // from http://phpxmlrpc.sourceforge.ne
 //fill in path to your PHP class file(s) to be used as Robot Framework keyword library below
 #require_once 'pathToYourLibrary.php';
 require_once 'libraries/example_library.php';
-//add additional require_once statements as needed for
+//add additional require_once statements as needed
 
 #define('LIBRARY_NAME','put PHP class name in here that will be used as Robot Framework keyword library');
 define('LIBRARY_NAME','ExampleLibrary');
@@ -180,7 +180,7 @@ function run_keyword($xmlrpcmsg)
 		//$library_instance = new $className();
 		//$method = $keyword_method;
 		//using variable argument list version
-		//$result = $library_instance->$method($arg_list);
+		//$result = $library_instance->$method($arg_list[0]);
 		
 		if(!is_null($result))
 			$keyword_result['return'] = $result;
