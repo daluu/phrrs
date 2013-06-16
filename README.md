@@ -1,4 +1,4 @@
-phrrs
+phrrs - PHp Robot Remote Server (can be pronounced "friss" or "furs"?)
 =====
 
 PHP generic remote library server for Robot Framework. 
