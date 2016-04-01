@@ -16,11 +16,20 @@ ini_set('date.timezone', 'Europe/Paris');
 
 ### Config section START ###
 
-// Fill in path to your PHP class file(s) to be used
-// as Robot Framework keyword library below.
-# require_once 'pathToYourLibrary.php';
-require_once 'libraries/example_library.php';
-// Add additional require_once statements as needed.
+// Every php file inside $directory folder will be added.
+// Put your PHP class file(s) into that $directory folder.
+$directory = 'libraries';
+if (is_dir($directory)) {
+  $files = scandir($directory);
+  foreach ($files as $file) {
+    if (!in_array($file, array('.', '..'))) {
+      $file_infos = new SplFileInfo($file);
+      if ('php' === $file_infos->getExtension()) {
+        require_once $directory . '/' . $file;
+      }
+    }
+  }
+}
 
 # define('LIBRARY_NAME','put PHP class name in here that will be used as Robot Framework keyword library');
 define('LIBRARY_NAME', 'ExampleLibrary');
