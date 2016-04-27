@@ -37,6 +37,41 @@ class RobotRemoteProtocol {
 		return $this->svr->service($data, true);
 	}
 
+	private function getXmlRpcDispatchMap() {
+		return array(
+		  // XML-RPC function/method name.
+		  'get_keyword_names' => array(
+		    // PHP function name of the XML-RPC function/method.
+		    'function' => '\PhpRobotRemoteServer\RobotRemoteProtocol::_get_keyword_names',
+		  ),
+		  'run_keyword'  => array(
+		    'function' => '\PhpRobotRemoteServer\RobotRemoteProtocol::_run_keyword',
+		  ),
+		  'get_keyword_arguments'  => array(
+		    'function' => '\PhpRobotRemoteServer\RobotRemoteProtocol::_get_keyword_arguments',
+		  ),
+		  'get_keyword_documentation'  => array(
+		    'function' => '\PhpRobotRemoteServer\RobotRemoteProtocol::_get_keyword_documentation',
+		  ),
+		);
+	}
+
+	static function _get_keyword_names($xmlrpcmsg) {
+		return RobotRemoteProtocol::getInstance()->get_keyword_names($xmlrpcmsg);
+	}
+
+	static function _run_keyword($xmlrpcmsg) {
+		return RobotRemoteProtocol::getInstance()->run_keyword($xmlrpcmsg);
+	}
+
+	static function _get_keyword_arguments($xmlrpcmsg) {
+		return RobotRemoteProtocol::getInstance()->get_keyword_arguments($xmlrpcmsg);
+	}
+
+	static function _get_keyword_documentation($xmlrpcmsg) {
+		return RobotRemoteProtocol::getInstance()->get_keyword_documentation($xmlrpcmsg);
+	}
+
 	/**
 	 * Helper function.
 	 */
@@ -99,20 +134,14 @@ class RobotRemoteProtocol {
 	 * Helper function.
 	 */
 	private function get_keyword_names($xmlrpcmsg) {
-	  $reflector = $this->keywords->getReflector();
-	  $keywords = $reflector->getMethods();
-	  $num_keywords = count($keywords);
-	  $keyword_names = new Value(array(), "array");
-	  for ($i = 0; $i < $num_keywords; $i++) {
-	    $keyword_names->addScalar($keywords[$i]->name);
+	  $keywordNames = $this->keywords->getKeywordNames();
+	  $keywordNameValues = new Value(array(), "array");
+	  foreach ($keywordNames as $keywordName) {
+	    $keywordNameValues->addScalar($keywordName);
 	  }
-	  // $keyword_names->addScalar("stop_remote_server");
-	  $xmlrpcresponse = new Response($keyword_names);
+	  // $keywordNameValues->addScalar("stop_remote_server");
+	  $xmlrpcresponse = new Response($keywordNameValues);
 	  return $xmlrpcresponse;
-	}
-
-	function _get_keyword_names($xmlrpcmsg) {
-		return RobotRemoteProtocol::getInstance()->get_keyword_names($xmlrpcmsg);
 	}
 
 	/**
@@ -235,10 +264,6 @@ class RobotRemoteProtocol {
 	  }
 	}
 
-	function _run_keyword($xmlrpcmsg) {
-		return RobotRemoteProtocol::getInstance()->run_keyword($xmlrpcmsg);
-	}
-
 	/**
 	 * Helper function.
 	 */
@@ -255,10 +280,6 @@ class RobotRemoteProtocol {
 	  }
 	  $xmlrpcresponse = new Response($keyword_arguments);
 	  return $xmlrpcresponse;
-	}
-
-	function _get_keyword_arguments($xmlrpcmsg) {
-		return RobotRemoteProtocol::getInstance()->get_keyword_arguments($xmlrpcmsg);
 	}
 
 	/**
@@ -282,29 +303,6 @@ class RobotRemoteProtocol {
 	  $keyword_documentation = new Value($phpkwdoc, "string");
 	  $xmlrpcresponse = new Response($keyword_documentation);
 	  return $xmlrpcresponse;
-	}
-
-	function _get_keyword_documentation($xmlrpcmsg) {
-		return RobotRemoteProtocol::getInstance()->get_keyword_documentation($xmlrpcmsg);
-	}
-
-	private function getXmlRpcDispatchMap() {
-		return array(
-		  // XML-RPC function/method name.
-		  'get_keyword_names' => array(
-		    // PHP function name of the XML-RPC function/method.
-		    'function' => '\PhpRobotRemoteServer\RobotRemoteProtocol::_get_keyword_names',
-		  ),
-		  'run_keyword'  => array(
-		    'function' => '\PhpRobotRemoteServer\RobotRemoteProtocol::_run_keyword',
-		  ),
-		  'get_keyword_arguments'  => array(
-		    'function' => '\PhpRobotRemoteServer\RobotRemoteProtocol::_get_keyword_arguments',
-		  ),
-		  'get_keyword_documentation'  => array(
-		    'function' => '\PhpRobotRemoteServer\RobotRemoteProtocol::_get_keyword_documentation',
-		  ),
-		);
 	}
 
 }
