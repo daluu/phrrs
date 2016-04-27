@@ -15,7 +15,7 @@ class RobotRemoteProtocol {
 
     private static $instance = NULL;
 
-	private $keywords;
+	private $keywordStore;
 	private $svr;
 
     public function getInstance() {
@@ -25,8 +25,8 @@ class RobotRemoteProtocol {
         return self::$instance;
     }
 
-	public function init($keywords) {
-		$this->keywords = $keywords;
+	public function init($keywordStore) {
+		$this->keywordStore = $keywordStore;
 		$this->svr = new \PhpXmlRpc\Server(
 			$this->getXmlRpcDispatchMap(),
 			false/*do NOT start server*/
@@ -134,7 +134,7 @@ class RobotRemoteProtocol {
 	 * Helper function.
 	 */
 	private function get_keyword_names($xmlrpcmsg) {
-	  $keywordNames = $this->keywords->getKeywordNames();
+	  $keywordNames = $this->keywordStore->getKeywordNames();
 	  $keywordNameValues = new Value(array(), "array");
 	  foreach ($keywordNames as $keywordName) {
 	    $keywordNameValues->addScalar($keywordName);
@@ -233,7 +233,7 @@ class RobotRemoteProtocol {
 
 	  try {
 	    // With reflection.
-	    $reflector = $this->keywords->getReflector();
+	    $reflector = $this->keywordStore->getReflector();
 	    $library_instance = $reflector->newInstance();
 	    $keyword_executor = $reflector->getMethod($keyword_method);
 	    // Per Robot Framework remote library spec, all arguments will stored in an array
@@ -242,7 +242,7 @@ class RobotRemoteProtocol {
 	    $result = $keyword_executor->invokeArgs($library_instance,$arg_list[0]);
 
 	    // using variable variables syntax
-	    //$library_instance = $this->keywords->getReflector()r;
+	    //$library_instance = $this->keywordStore->getReflector()r;
 	    //$method = $keyword_method;
 	    //using variable argument list version
 	    //$result = $library_instance->$method($arg_list[0]);
@@ -269,7 +269,7 @@ class RobotRemoteProtocol {
 	 */
 	private function get_keyword_arguments($xmlrpcmsg) {
 	  $keyword_name = $xmlrpcmsg->getParam(0)->scalarVal();
-	  $reflector = $this->keywords->getReflector();
+	  $reflector = $this->keywordStore->getReflector();
 	  $keyword = $reflector->getMethod($keyword_name);
 	  // Array of ReflectionParameter objects.
 	  $kw_params = $keyword->getParameters();
@@ -287,7 +287,7 @@ class RobotRemoteProtocol {
 	 */
 	private function get_keyword_documentation($xmlrpcmsg) {
 	  $keyword_name = $xmlrpcmsg->getParam(0)->scalarVal();
-	  $reflector = $this->keywords->getReflector();
+	  $reflector = $this->keywordStore->getReflector();
 	  $keyword = $reflector->getMethod($keyword_name);
 	  $phpkwdoc = $keyword->getDocComment();
 

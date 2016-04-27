@@ -2,7 +2,7 @@
 
 namespace PhpRobotRemoteServer;
 
-class Keywords {
+class KeywordStore {
 
 	private $keywordsDirectory;
 
