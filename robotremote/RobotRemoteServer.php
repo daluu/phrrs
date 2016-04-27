@@ -2,19 +2,19 @@
 
 namespace PhpRobotRemoteServer;
 
-use \PhpRobotRemoteServer\Keywords;
+use \PhpRobotRemoteServer\KeywordStore;
 use \PhpRobotRemoteServer\RobotRemoteProtocol;
 
 class RobotRemoteServer {
 
-	private $keywords;
+	private $keywordStore;
 	private $server;
 
 	public function start($keywordsDirectory) {
-		$this->keywords = new Keywords();
-		$this->keywords->collectKeywords($keywordsDirectory);
+		$this->keywordStore = new KeywordStore();
+		$this->keywordStore->collectKeywords($keywordsDirectory);
 		$this->server = RobotRemoteProtocol::getInstance();
-		$this->server->init($this->keywords);
+		$this->server->init($this->keywordStore);
 		while (true) {
 			$result = $this->server->exec('<?xml version="1.0"?>
 			<methodCall>
