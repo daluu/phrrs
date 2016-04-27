@@ -2,16 +2,14 @@
 
 namespace PhpRobotRemoteServer;
 
-// require './vendor/autoload.php';
-
-// require_once('RobotRemoteProtocol.php');
-
 class Keywords {
 
-	public function collectKeywords() {
+	private $keywordsDirectory;
+
+	public function collectKeywords($keywordsDirectory) {
 		// Every php file inside $directory folder will be added.
 		// Put your PHP class file(s) into that $directory folder.
-		$directory = 'libraries';
+		$directory = $keywordsDirectory;
 		if (is_dir($directory)) {
 		  $files = scandir($directory);
 		  foreach ($files as $file) {
