@@ -12,9 +12,9 @@ class RobotRemoteServer {
 	private $keywords;
 	private $server;
 
-	public function start() {
+	public function start($keywordsDirectory) {
 		$this->keywords = new \PhpRobotRemoteServer\Keywords();
-		$this->keywords->collectKeywords();
+		$this->keywords->collectKeywords($keywordsDirectory);
 		$this->server = \PhpRobotRemoteServer\RobotRemoteProtocol::getInstance();
 		$this->server->init($this->keywords);
 		$result = $this->server->exec('<?xml version="1.0"?>
