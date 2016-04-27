@@ -33,4 +33,13 @@ class Keywords {
 		return new \ReflectionClass('ExampleLibrary');
 	}
 
+	public function getKeywordNames() {
+	  $keywords = $this->getReflector()->getMethods();
+	  $keywordNames = array();
+	  foreach ($keywords as $keyword) {
+	    $keywordNames[] = $keyword->name;
+	  }
+	  return $keywordNames;
+	}
+
 }
