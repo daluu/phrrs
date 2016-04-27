@@ -232,14 +232,11 @@ class RobotRemoteProtocol {
 	  // output will always be empty since we can't redirect echo's and print's in PHP...
 
 	  try {
-	    // With reflection.
-	    $reflector = $this->keywordStore->getReflector();
-	    $library_instance = $reflector->newInstance();
-	    $keyword_executor = $reflector->getMethod($keyword_method);
 	    // Per Robot Framework remote library spec, all arguments will stored in an array
 	    // as the 2nd argument to XML-RPC method call, and first argument is keyword name
 	    // which we've parsed out of array, so then arguments should be $arg_list[0]
-	    $result = $keyword_executor->invokeArgs($library_instance,$arg_list[0]);
+	    $keywordArgs = $arg_list[0];
+	    $result = $this->execKeyword($keyword_method, $keywordArgs);
 
 	    // using variable variables syntax
 	    //$library_instance = $this->keywordStore->getReflector()r;
@@ -254,11 +251,11 @@ class RobotRemoteProtocol {
 	    return $xmlrpcresponse;
 	  }
 	  catch(Exception $e){
-	    $keyword_result['return']     = "";
-	    $keyword_result['status']     = "FAIL";
-	    $keyword_result['output']     = "";
-	    $keyword_result['error']       = $e->getMessage();
-	    $keyword_result['traceback']   = $e->getTraceAsString();
+	    $keyword_result['return']    = "";
+	    $keyword_result['status']    = "FAIL";
+	    $keyword_result['output']    = "";
+	    $keyword_result['error']     = $e->getMessage();
+	    $keyword_result['traceback'] = $e->getTraceAsString();
 	    $xmlrpcresponse = new Response(xmlrpc_encode_keyword_result($keyword_result));
 	    return $xmlrpcresponse;
 	  }
