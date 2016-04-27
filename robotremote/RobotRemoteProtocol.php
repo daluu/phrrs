@@ -224,7 +224,7 @@ class RobotRemoteProtocol {
 	      // this section here is placeholder for you to add in that code
 	      // and swap the output message as appropriately above.
 	    }
-	    $xmlrpcresponse = new Response(xmlrpc_encode_keyword_result($keyword_result));
+	    $xmlrpcresponse = new Response($this->xmlrpc_encode_keyword_result($keyword_result));
 	    return $xmlrpcresponse;
 	  } // else all other keywords...
 
@@ -236,7 +236,7 @@ class RobotRemoteProtocol {
 	    // as the 2nd argument to XML-RPC method call, and first argument is keyword name
 	    // which we've parsed out of array, so then arguments should be $arg_list[0]
 	    $keywordArgs = $arg_list[0];
-	    $result = $this->execKeyword($keyword_method, $keywordArgs);
+	    $result = $this->keywordStore->execKeyword($keyword_method, $keywordArgs);
 
 	    // using variable variables syntax
 	    //$library_instance = $this->keywordStore->getReflector()r;
@@ -247,7 +247,7 @@ class RobotRemoteProtocol {
 	    if (!is_null($result)) {
 	      $keyword_result['return'] = $result;
 	    }
-	    $xmlrpcresponse = new Response(xmlrpc_encode_keyword_result($keyword_result));
+	    $xmlrpcresponse = new Response($this->xmlrpc_encode_keyword_result($keyword_result));
 	    return $xmlrpcresponse;
 	  }
 	  catch(Exception $e){
@@ -256,7 +256,7 @@ class RobotRemoteProtocol {
 	    $keyword_result['output']    = "";
 	    $keyword_result['error']     = $e->getMessage();
 	    $keyword_result['traceback'] = $e->getTraceAsString();
-	    $xmlrpcresponse = new Response(xmlrpc_encode_keyword_result($keyword_result));
+	    $xmlrpcresponse = new Response($this->xmlrpc_encode_keyword_result($keyword_result));
 	    return $xmlrpcresponse;
 	  }
 	}
