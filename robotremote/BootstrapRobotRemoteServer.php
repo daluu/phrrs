@@ -13,4 +13,6 @@ if ($argvCount < 2) {
 	die("Too many parameters: only one parameter required\n");
 }
 
-(new RobotRemoteServer())->start($argv[1]);
+$server = new RobotRemoteServer();
+$server->init($argv[1]);
+$server->start();
