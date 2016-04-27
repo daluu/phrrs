@@ -2,10 +2,8 @@
 
 namespace PhpRobotRemoteServer;
 
-require './vendor/autoload.php';
-
-require_once('Keywords.php');
-require_once('RobotRemoteProtocol.php');
+use \PhpRobotRemoteServer\Keywords;
+use \PhpRobotRemoteServer\RobotRemoteProtocol;
 
 class RobotRemoteServer {
 
@@ -13,9 +11,9 @@ class RobotRemoteServer {
 	private $server;
 
 	public function start($keywordsDirectory) {
-		$this->keywords = new \PhpRobotRemoteServer\Keywords();
+		$this->keywords = new Keywords();
 		$this->keywords->collectKeywords($keywordsDirectory);
-		$this->server = \PhpRobotRemoteServer\RobotRemoteProtocol::getInstance();
+		$this->server = RobotRemoteProtocol::getInstance();
 		$this->server->init($this->keywords);
 		$result = $this->server->exec('<?xml version="1.0"?>
 		<methodCall>

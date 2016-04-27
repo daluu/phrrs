@@ -2,7 +2,9 @@
 
 namespace PhpRobotRemoteServer;
 
-require_once('RobotRemoteServer.php');
+require './vendor/autoload.php';
+
+use \PhpRobotRemoteServer\RobotRemoteServer;
 
 $argvCount = count($argv);
 if ($argvCount < 2) {
