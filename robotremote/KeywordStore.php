@@ -42,4 +42,13 @@ class KeywordStore {
 	  return $keywordNames;
 	}
 
+	public function execKeyword($keywordName, $keywordArgs) {
+	    // With reflection.
+	    $reflector = $this->getReflector();
+	    $libraryInstance = $reflector->newInstance();
+	    $keywordExecutor = $reflector->getMethod($keywordName);
+	    $result = $keywordExecutor->invokeArgs($libraryInstance, $keywordArgs);
+	    return $result;
+	}
+
 }

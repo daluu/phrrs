@@ -1,23 +1,8 @@
 <?php
-/**
- * @file
- * example_library.php
- */
-
-/**
- * This example library is a port of the Python reference version:
- * http://robotframework.googlecode.com/hg/tools/remoteserver/example/examplelibrary.py
- * it is by no means an exact functional port, but close enough.
- */
 class ExampleLibrary {
 
-  /**
-   * Returns a count of files and folders in the specified directory.
-   */
-  public function count_items_in_directory($path) {
-    // -2 = Subtract for "." and ".."
-    $file_count = count(scandir($path)) - 2;
-    return $file_count;
+  public function truth_of_life() {
+    return 42;
   }
 
   /**
@@ -35,5 +20,6 @@ class ExampleLibrary {
       // die ("Given strings are not equal");
     }
 
+    return $str1 == $str2;
   }
 }
