@@ -28,13 +28,30 @@ class KeywordStore {
 		// or read from a INI/config file or database query.
 	}
 
-	public function getReflector() {
+	private function getReflector() {
 		# PHP class name that will be used as Robot Framework keyword library
 		return new \ReflectionClass('ExampleLibrary');
 	}
 
+	private function getAllKeywordMethods() {
+		$reflector = $this->getReflector();
+		return $this->getReflector()->getMethods();
+	}
+
+	private function getKeywordMethod($keywordName) {
+		$reflector = $this->getReflector();
+		$keyword = $reflector->getMethod($keywordName);
+		return $keyword;
+	}
+
+	private function getKeywordExecutorInstance($keywordName) {
+		$reflector = $this->getReflector();
+	    $libraryInstance = $reflector->newInstance();
+		return $libraryInstance;
+	}
+
 	public function getKeywordNames() {
-	  $keywords = $this->getReflector()->getMethods();
+	  $keywords = $this->getAllKeywordMethods();
 	  $keywordNames = array();
 	  foreach ($keywords as $keyword) {
 	    $keywordNames[] = $keyword->name;
@@ -43,12 +60,37 @@ class KeywordStore {
 	}
 
 	public function execKeyword($keywordName, $keywordArgs) {
-	    // With reflection.
-	    $reflector = $this->getReflector();
-	    $libraryInstance = $reflector->newInstance();
-	    $keywordExecutor = $reflector->getMethod($keywordName);
+	    $libraryInstance = $this->getKeywordExecutorInstance($keywordName);
+		$keywordExecutor = $this->getKeywordMethod($keywordName);
 	    $result = $keywordExecutor->invokeArgs($libraryInstance, $keywordArgs);
 	    return $result;
+	}
+
+	public function getKeywordArguments($keywordName) {
+	  $keyword = $this->getKeywordMethod($keywordName);
+	  // Array of ReflectionParameter objects.
+	  $keywordParams = $keyword->getParameters();
+	  $keywordParamNames = array();
+	  foreach ($keywordParams as $keywordParam) {
+	    $keywordParamNames[] = $keywordParam->name;
+	  }
+	  return $keywordParamNames;
+	}
+
+	public function getKeywordDocumentation($keywordName) {
+	  $keyword = $this->getKeywordMethod($keywordName);
+	  $phpkwdoc = $keyword->getDocComment();
+
+	  // Clean up formatting of documentation
+	  // (e.g. remove CRLF, tabs, and the PHP doc comment identifiers "/**...*/")
+	  $phpkwdoc = preg_replace("/[\010]/", "\n", $phpkwdoc);
+	  $phpkwdoc = preg_replace("/[\013]/", "", $phpkwdoc);
+	  $phpkwdoc = preg_replace("/\s{2,}/", "", $phpkwdoc);
+	  $phpkwdoc = preg_replace("/\/\*\*/", "", $phpkwdoc);
+	  $phpkwdoc = preg_replace("/\*\//", "", $phpkwdoc);
+	  $phpkwdoc = preg_replace("/\*\s/", "", $phpkwdoc);
+
+	  return $phpkwdoc;
 	}
 
 }

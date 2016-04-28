@@ -265,17 +265,14 @@ class RobotRemoteProtocol {
 	 * Helper function.
 	 */
 	private function get_keyword_arguments($xmlrpcmsg) {
-	  $keyword_name = $xmlrpcmsg->getParam(0)->scalarVal();
-	  $reflector = $this->keywordStore->getReflector();
-	  $keyword = $reflector->getMethod($keyword_name);
+	  $keywordName = $xmlrpcmsg->getParam(0)->scalarVal();
 	  // Array of ReflectionParameter objects.
-	  $kw_params = $keyword->getParameters();
-	  $num_args = count($kw_params);
-	  $keyword_arguments = new Value(array(), "array");
-	  for ($i = 0; $i < $num_args; $i++) {
-	    $keyword_arguments->addScalar($kw_params[$i]->name);
+	  $keywordArgumentNames = $this->keywordStore->getKeywordArguments($keywordName);
+	  $keywordArgumentNameValues = new Value(array(), "array");
+	  foreach ($keywordArgumentNames as $keywordArgumentName) {
+	    $keywordArgumentNameValues->addScalar($keywordArgumentName);
 	  }
-	  $xmlrpcresponse = new Response($keyword_arguments);
+	  $xmlrpcresponse = new Response($keywordArgumentNameValues);
 	  return $xmlrpcresponse;
 	}
 
@@ -283,20 +280,8 @@ class RobotRemoteProtocol {
 	 * Helper function.
 	 */
 	private function get_keyword_documentation($xmlrpcmsg) {
-	  $keyword_name = $xmlrpcmsg->getParam(0)->scalarVal();
-	  $reflector = $this->keywordStore->getReflector();
-	  $keyword = $reflector->getMethod($keyword_name);
-	  $phpkwdoc = $keyword->getDocComment();
-
-	  // Clean up formatting of documentation
-	  // (e.g. remove CRLF, tabs, and the PHP doc comment identifiers "/**...*/")
-	  $phpkwdoc = preg_replace("/[\010]/", "\n", $phpkwdoc);
-	  $phpkwdoc = preg_replace("/[\013]/", "", $phpkwdoc);
-	  $phpkwdoc = preg_replace("/\s{2,}/", "", $phpkwdoc);
-	  $phpkwdoc = preg_replace("/\/\*\*/", "", $phpkwdoc);
-	  $phpkwdoc = preg_replace("/\*\//", "", $phpkwdoc);
-	  $phpkwdoc = preg_replace("/\*\s/", "", $phpkwdoc);
-
+	  $keywordName = $xmlrpcmsg->getParam(0)->scalarVal();
+	  $phpkwdoc = $this->keywordStore->getKeywordDocumentation($keywordName);
 	  $keyword_documentation = new Value($phpkwdoc, "string");
 	  $xmlrpcresponse = new Response($keyword_documentation);
 	  return $xmlrpcresponse;
