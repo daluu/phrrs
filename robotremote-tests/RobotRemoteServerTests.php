@@ -85,4 +85,45 @@ class RobotRemoteServerTests extends PHPUnit_Framework_TestCase {
 </methodResponse>');
     }
 
+    public function testGetKeywordArguments()
+    {
+        $this->checkRpcCall('<?xml version="1.0"?>
+            <methodCall>
+               <methodName>get_keyword_arguments</methodName>
+               <params>
+                  <param><value><string>strings_should_be_equal</string></value></param> 
+               </params>
+               </methodCall>', '<?xml version="1.0"?>
+<methodResponse>
+<params>
+<param>
+<value><array>
+<data>
+<value><string>str1</string></value>
+<value><string>str2</string></value>
+</data>
+</array></value>
+</param>
+</params>
+</methodResponse>');
+    }
+
+    public function testGetKeywordDocumentation()
+    {
+        $this->checkRpcCall('<?xml version="1.0"?>
+            <methodCall>
+               <methodName>get_keyword_documentation</methodName>
+               <params>
+                  <param><value><string>strings_should_be_equal</string></value></param> 
+               </params>
+               </methodCall>', '<?xml version="1.0"?>
+<methodResponse>
+<params>
+<param>
+<value><string>Compare 2 strings. If they are not equal, throws exception.</string></value>
+</param>
+</params>
+</methodResponse>');
+    }
+
 }

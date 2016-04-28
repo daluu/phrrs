@@ -19,6 +19,7 @@ class RobotRemoteServer {
 
 	public function start() {
 		while (true) {
+			// TODO implement server logic, feeding the streams from sockets
 			$inputStream = fopen('data://text/plain;base64,'
 				. base64_encode('<?xml version="1.0"?>
 			<methodCall>
