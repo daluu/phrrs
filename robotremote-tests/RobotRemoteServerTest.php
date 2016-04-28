@@ -4,13 +4,11 @@ use \PhpRobotRemoteServer\RobotRemoteServer;
 
 class RobotRemoteServerTests extends PHPUnit_Framework_TestCase {
 
-    protected function setUp()
-    {
+    protected function setUp() {
 
     }
 
-    protected function tearDown()
-    {
+    protected function tearDown() {
 
     }
 
@@ -28,8 +26,7 @@ class RobotRemoteServerTests extends PHPUnit_Framework_TestCase {
         $this->assertEquals($expectedRpcAnswer, $result);
     }
 
-    public function testGetKeywordNames()
-    {
+    public function testGetKeywordNames() {
         $this->checkRpcCall('<?xml version="1.0"?>
             <methodCall>
                <methodName>get_keyword_names</methodName>
@@ -50,8 +47,7 @@ class RobotRemoteServerTests extends PHPUnit_Framework_TestCase {
 </methodResponse>');
     }
 
-    public function testRunKeyword()
-    {
+    public function testRunKeyword() {
         $this->checkRpcCall('<?xml version="1.0"?>
             <methodCall>
                <methodName>run_keyword</methodName>
@@ -85,8 +81,7 @@ class RobotRemoteServerTests extends PHPUnit_Framework_TestCase {
 </methodResponse>');
     }
 
-    public function testGetKeywordArguments()
-    {
+    public function testGetKeywordArguments() {
         $this->checkRpcCall('<?xml version="1.0"?>
             <methodCall>
                <methodName>get_keyword_arguments</methodName>
@@ -108,8 +103,7 @@ class RobotRemoteServerTests extends PHPUnit_Framework_TestCase {
 </methodResponse>');
     }
 
-    public function testGetKeywordDocumentation()
-    {
+    public function testGetKeywordDocumentation() {
         $this->checkRpcCall('<?xml version="1.0"?>
             <methodCall>
                <methodName>get_keyword_documentation</methodName>
