@@ -1,11 +1,26 @@
 <?php
 
+use \PhpRobotRemoteServer\KeywordStore;
 use \PhpRobotRemoteServer\RobotRemoteServer;
+use \PhpRobotRemoteServer\RobotRemoteProtocol;
 
 class RobotRemoteServerTests extends PHPUnit_Framework_TestCase {
 
-    protected function setUp() {
+    private $server;
 
+    protected function setUp() {
+        /*
+         * TODO we could fake KeywordStore instead of loading files from disk :
+         * would me more efficient, more self contained and more stable.
+         */
+        $keywordStore = new KeywordStore();
+        $keywordStore->collectKeywords(__DIR__.'/test-libraries');
+
+        $protocol = RobotRemoteProtocol::getInstance();
+        $protocol->init($keywordStore);
+
+        $this->server = new RobotRemoteServer();
+        $this->server->init($protocol);
     }
 
     protected function tearDown() {
@@ -13,13 +28,10 @@ class RobotRemoteServerTests extends PHPUnit_Framework_TestCase {
     }
 
     private function checkRpcCall($rpcRequest, $expectedRpcAnswer) {
-        $server = new RobotRemoteServer();
-        $server->init(__DIR__.'/test-libraries');
-
         $inputStream = fopen('data://text/plain;base64,'
                 . base64_encode($rpcRequest), 'r');
         $outputStream = fopen('php://memory', 'w');
-        $server->execRequest($inputStream, $outputStream);
+        $this->server->execRequest($inputStream, $outputStream);
 
         rewind($outputStream);
         $result = stream_get_contents($outputStream);

@@ -2,22 +2,16 @@
 
 namespace PhpRobotRemoteServer;
 
-use \PhpRobotRemoteServer\KeywordStore;
-use \PhpRobotRemoteServer\RobotRemoteProtocol;
-
 class RobotRemoteServer {
 
-	private $keywordStore;
-	private $server;
+	private $protocol;
 
-	public function init($keywordsDirectory) {
-		$this->keywordStore = new KeywordStore();
-		$this->keywordStore->collectKeywords($keywordsDirectory);
-		$this->server = RobotRemoteProtocol::getInstance();
-		$this->server->init($this->keywordStore);
+	public function init($protocol) {
+		$this->protocol = $protocol;
 	}
 
-	public function start() {
+	// TODO use server port...
+	public function start($serverPort) {
 		while (true) {
 			// TODO implement server logic, feeding the streams from sockets
 			$inputStream = fopen('data://text/plain;base64,'
@@ -35,7 +29,7 @@ class RobotRemoteServer {
 
 	function execRequest($inputStream, $outputStream) {
 		$request = stream_get_contents($inputStream);
-		$result = $this->server->exec($request);
+		$result = $this->protocol->exec($request);
 		fwrite($outputStream, $result);
 	}
 
