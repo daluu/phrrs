@@ -4,15 +4,21 @@ namespace PhpRobotRemoteServer;
 
 require './vendor/autoload.php';
 
-use \PhpRobotRemoteServer\RobotRemoteServer;
-
 $argvCount = count($argv);
-if ($argvCount < 2) {
-	die("Missing parameter: path to the keywords implementation in PHP\n");
-} else if ($argvCount > 2) {
-	die("Too many parameters: only one parameter required\n");
+if ($argvCount < 3) {
+	die("Missing parameters: path to the keywords implementation in PHP + port that the server must use\n");
+} else if ($argvCount > 3) {
+	die("Too many parameters: only two parameters required\n");
 }
 
+$keywordsDirectory = $argv[1];
+$keywordStore = new KeywordStore();
+$keywordStore->collectKeywords($keywordsDirectory);
+
+$protocol = RobotRemoteProtocol::getInstance();
+$protocol->init($keywordStore);
+
 $server = new RobotRemoteServer();
-$server->init($argv[1]);
-$server->start();
+$server->init($protocol);
+$serverPort = $argv[2];
+$server->start($serverPort);
