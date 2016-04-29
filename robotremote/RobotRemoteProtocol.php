@@ -9,14 +9,13 @@ use \PhpXmlRpc\Value;
 ini_set('always_populate_raw_post_data', -1);
 ini_set('date.timezone', 'Europe/Paris');
 
-define('ENABLE_STOP_SVR', FALSE);
-
 class RobotRemoteProtocol {
 
     private static $instance = NULL;
 
 	private $keywordStore;
-	private $svr;
+	private $xmlrpcProcessor;
+	private $robotRemoteServer;
 
     static public function getInstance() {
     	if (is_null(self::$instance)) {
@@ -27,14 +26,18 @@ class RobotRemoteProtocol {
 
 	public function init($keywordStore) {
 		$this->keywordStore = $keywordStore;
-		$this->svr = new \PhpXmlRpc\Server(
+		$this->xmlrpcProcessor = new \PhpXmlRpc\Server(
 			$this->getXmlRpcDispatchMap(),
 			false/*do NOT start server*/
 		);
 	}
 
+	public function setRobotRemoteServer($robotRemoteServer) {
+		$this->robotRemoteServer = $robotRemoteServer;
+	}
+
 	public function exec($data) {
-		return $this->svr->service($data, true);
+		return $this->xmlrpcProcessor->service($data, true);
 	}
 
 	private function getXmlRpcDispatchMap() {
@@ -44,14 +47,17 @@ class RobotRemoteProtocol {
 		    // PHP function name of the XML-RPC function/method.
 		    'function' => '\PhpRobotRemoteServer\RobotRemoteProtocol::_get_keyword_names',
 		  ),
-		  'run_keyword'  => array(
+		  'run_keyword' => array(
 		    'function' => '\PhpRobotRemoteServer\RobotRemoteProtocol::_run_keyword',
 		  ),
-		  'get_keyword_arguments'  => array(
+		  'get_keyword_arguments' => array(
 		    'function' => '\PhpRobotRemoteServer\RobotRemoteProtocol::_get_keyword_arguments',
 		  ),
-		  'get_keyword_documentation'  => array(
+		  'get_keyword_documentation' => array(
 		    'function' => '\PhpRobotRemoteServer\RobotRemoteProtocol::_get_keyword_documentation',
+		  ),
+		  'stop_remote_server' => array(
+		    'function' => '\PhpRobotRemoteServer\RobotRemoteProtocol::_stop_remote_server',
 		  ),
 		);
 	}
@@ -72,10 +78,11 @@ class RobotRemoteProtocol {
 		return RobotRemoteProtocol::getInstance()->get_keyword_documentation($xmlrpcmsg);
 	}
 
-	/**
-	 * Helper function.
-	 */
-	private function xmlrpc_encode_keyword_result($keyword_result) {
+	static function _stop_remote_server($xmlrpcmsg) {
+		return RobotRemoteProtocol::getInstance()->stop_remote_server($xmlrpcmsg);
+	}
+
+	private function xmlrpcEncodeKeywordResult($keyword_result) {
 	  // Determine keyword return data type.
 	  $type = gettype($keyword_result['return']);
 	  $xmlrpc_type = "string";
@@ -130,23 +137,17 @@ class RobotRemoteProtocol {
 	  return $encoded;
 	}
 
-	/**
-	 * Helper function.
-	 */
 	private function get_keyword_names($xmlrpcmsg) {
-	  $keywordNames = $this->keywordStore->getKeywordNames();
-	  $keywordNameValues = new Value(array(), "array");
-	  foreach ($keywordNames as $keywordName) {
-	    $keywordNameValues->addScalar($keywordName);
-	  }
-	  // $keywordNameValues->addScalar("stop_remote_server");
-	  $xmlrpcresponse = new Response($keywordNameValues);
-	  return $xmlrpcresponse;
+		$keywordNames = $this->keywordStore->getKeywordNames();
+
+		$keywordNameValues = new Value(array(), "array");
+		foreach ($keywordNames as $keywordName) {
+	    	$keywordNameValues->addScalar($keywordName);
+		}
+		$xmlrpcResponse = new Response($keywordNameValues);
+		return $xmlrpcResponse;
 	}
 
-	/**
-	 * Helper function.
-	 */
 	// TODO split this baby-monster method
 	private function run_keyword($xmlrpcmsg) {
 	  $numargs = $xmlrpcmsg->getNumParams();
@@ -205,29 +206,6 @@ class RobotRemoteProtocol {
 	    'return' => '',
 	  );
 
-	  if ($keyword_method == "stop_remote_server") {
-	    if (!ENABLE_STOP_SVR) {
-	      $keyword_result['output'] = "NOTE: remote server not configured to allow remote shutdowns. Your request has been ignored.";
-	    }
-	    else {
-	      // $keyword_result['output'] = "NOTE: remote server shutting/shut down.";
-	      $keyword_result['output'] = "NOTE: remote server shutdown currently not implemented, so your request has been ignored.";
-
-	      // Since XML-RPC over PHP is served via a web server (Apache, IIS, etc.)
-	      // it can't be shut down on its own
-	      // therefore, we can shut down by shutting down the web server
-	      // (via shell commands, kill process, WMI, web service call, etc.)
-
-	      // Do we want to allow/do that?
-
-	      // If yes, in any case,
-	      // this section here is placeholder for you to add in that code
-	      // and swap the output message as appropriately above.
-	    }
-	    $xmlrpcresponse = new Response($this->xmlrpc_encode_keyword_result($keyword_result));
-	    return $xmlrpcresponse;
-	  } // else all other keywords...
-
 	  // execute keyword based on examples from http://en.wikipedia.org/wiki/Reflection_(computer_programming)
 	  // output will always be empty since we can't redirect echo's and print's in PHP...
 
@@ -247,8 +225,8 @@ class RobotRemoteProtocol {
 	    if (!is_null($result)) {
 	      $keyword_result['return'] = $result;
 	    }
-	    $xmlrpcresponse = new Response($this->xmlrpc_encode_keyword_result($keyword_result));
-	    return $xmlrpcresponse;
+	    $xmlrpcResponse = new Response($this->xmlrpcEncodeKeywordResult($keyword_result));
+	    return $xmlrpcResponse;
 	  }
 	  catch(Exception $e){
 	    $keyword_result['return']    = "";
@@ -256,35 +234,39 @@ class RobotRemoteProtocol {
 	    $keyword_result['output']    = "";
 	    $keyword_result['error']     = $e->getMessage();
 	    $keyword_result['traceback'] = $e->getTraceAsString();
-	    $xmlrpcresponse = new Response($this->xmlrpc_encode_keyword_result($keyword_result));
-	    return $xmlrpcresponse;
+	    $xmlrpcResponse = new Response($this->xmlrpcEncodeKeywordResult($keyword_result));
+	    return $xmlrpcResponse;
 	  }
 	}
 
-	/**
-	 * Helper function.
-	 */
 	private function get_keyword_arguments($xmlrpcmsg) {
-	  $keywordName = $xmlrpcmsg->getParam(0)->scalarVal();
-	  // Array of ReflectionParameter objects.
-	  $keywordArgumentNames = $this->keywordStore->getKeywordArguments($keywordName);
-	  $keywordArgumentNameValues = new Value(array(), "array");
-	  foreach ($keywordArgumentNames as $keywordArgumentName) {
-	    $keywordArgumentNameValues->addScalar($keywordArgumentName);
-	  }
-	  $xmlrpcresponse = new Response($keywordArgumentNameValues);
-	  return $xmlrpcresponse;
+		$keywordName = $xmlrpcmsg->getParam(0)->scalarVal();
+		// Array of ReflectionParameter objects.
+		$keywordArgumentNames = $this->keywordStore->getKeywordArguments($keywordName);
+
+		$keywordArgumentNameValues = new Value(array(), "array");
+		foreach ($keywordArgumentNames as $keywordArgumentName) {
+			$keywordArgumentNameValues->addScalar($keywordArgumentName);
+		}
+		$xmlrpcResponse = new Response($keywordArgumentNameValues);
+		return $xmlrpcResponse;
 	}
 
-	/**
-	 * Helper function.
-	 */
 	private function get_keyword_documentation($xmlrpcmsg) {
-	  $keywordName = $xmlrpcmsg->getParam(0)->scalarVal();
-	  $phpkwdoc = $this->keywordStore->getKeywordDocumentation($keywordName);
-	  $keyword_documentation = new Value($phpkwdoc, "string");
-	  $xmlrpcresponse = new Response($keyword_documentation);
-	  return $xmlrpcresponse;
+		$keywordName = $xmlrpcmsg->getParam(0)->scalarVal();
+		$phpkwdoc = $this->keywordStore->getKeywordDocumentation($keywordName);
+
+		$keywordDocumentation = new Value($phpkwdoc, "string");
+		$xmlrpcResponse = new Response($keywordDocumentation);
+		return $xmlrpcResponse;
+	}
+
+	private function stop_remote_server($xmlrpcmsg) {
+		$this->robotRemoteServer->stop();
+
+		$serverStopped = new Value(TRUE, "boolean");
+		$xmlrpcResponse = new Response($serverStopped);
+		return $xmlrpcResponse;
 	}
 
 }

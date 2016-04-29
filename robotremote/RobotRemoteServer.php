@@ -5,9 +5,11 @@ namespace PhpRobotRemoteServer;
 class RobotRemoteServer {
 
 	private $protocol;
+	private $stopped = FALSE;
 
 	public function init($protocol) {
 		$this->protocol = $protocol;
+		$this->protocol->setRobotRemoteServer($this);
 	}
 
 	// TODO use server port... and get data from there
@@ -24,10 +26,9 @@ class RobotRemoteServer {
 	}
 
 	public function start($inputStream, $outputStream) {
-		while (true) {
+		while (!$this->stopped) {
 			// TODO implement server logic, feeding the streams from sockets
 			$this->execRequest($inputStream, $outputStream);
-			die("\nStopping: not yet an actual server\n");
 		}
 	}
 
@@ -35,6 +36,14 @@ class RobotRemoteServer {
 		$request = stream_get_contents($inputStream);
 		$result = $this->protocol->exec($request);
 		fwrite($outputStream, $result);
+	}
+
+	public function stop() {
+		$this->stopped = TRUE;
+	}
+
+	public function isStopped() {
+		return $this->stopped;
 	}
 
 }
