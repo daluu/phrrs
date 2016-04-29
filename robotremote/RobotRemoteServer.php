@@ -10,18 +10,22 @@ class RobotRemoteServer {
 		$this->protocol = $protocol;
 	}
 
-	// TODO use server port...
-	public function start($serverPort) {
+	// TODO use server port... and get data from there
+	public function startOnPort($serverPort) {
+		$inputStream = fopen('data://text/plain;base64,'
+			. base64_encode('<?xml version="1.0"?>
+		<methodCall>
+		   <methodName>get_keyword_names</methodName>
+		   <params>
+		      </params>
+		   </methodCall>'), 'r');
+		$outputStream = fopen('php://stdout', 'w');
+		$this->start($inputStream, $outputStream);
+	}
+
+	public function start($inputStream, $outputStream) {
 		while (true) {
 			// TODO implement server logic, feeding the streams from sockets
-			$inputStream = fopen('data://text/plain;base64,'
-				. base64_encode('<?xml version="1.0"?>
-			<methodCall>
-			   <methodName>get_keyword_names</methodName>
-			   <params>
-			      </params>
-			   </methodCall>'), 'r');
-			$outputStream = fopen('php://stdout', 'w');
 			$this->execRequest($inputStream, $outputStream);
 			die("\nStopping: not yet an actual server\n");
 		}
