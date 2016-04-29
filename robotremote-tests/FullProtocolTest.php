@@ -28,14 +28,9 @@ class FullProtocolTests extends PHPUnit_Framework_TestCase {
     }
 
     private function checkRpcCall($rpcRequest, $expectedRpcAnswer) {
-        $inputStream = fopen('data://text/plain;base64,'
-                . base64_encode($rpcRequest), 'r');
-        $outputStream = fopen('php://memory', 'w');
-        $this->server->execRequest($inputStream, $outputStream);
-
-        rewind($outputStream);
-        $result = stream_get_contents($outputStream);
-        $this->assertEquals($expectedRpcAnswer, $result);
+        $actualRpcAnswer = $this->server->execRequest($rpcRequest);
+        
+        $this->assertXmlStringEqualsXmlString($expectedRpcAnswer, $actualRpcAnswer);
     }
 
     public function testGetKeywordNames() {
