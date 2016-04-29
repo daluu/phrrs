@@ -14,28 +14,22 @@ class RobotRemoteServer {
 
 	// TODO use server port... and get data from there
 	public function startOnPort($serverPort) {
-		$inputStream = fopen('data://text/plain;base64,'
-			. base64_encode('<?xml version="1.0"?>
-		<methodCall>
-		   <methodName>get_keyword_names</methodName>
-		   <params>
-		      </params>
-		   </methodCall>'), 'r');
-		$outputStream = fopen('php://stdout', 'w');
-		$this->start($inputStream, $outputStream);
+		$requests = new DemoRequests();
+		$responses = new DemoResponses();
+		$this->start($requests, $responses);
 	}
 
-	public function start($inputStream, $outputStream) {
+	public function start($requests, $responses) {
 		while (!$this->stopped) {
-			// TODO implement server logic, feeding the streams from sockets
-			$this->execRequest($inputStream, $outputStream);
+			$request = $requests->get();
+			$response = $this->execRequest($request);
+			$responses->add($response);
 		}
 	}
 
-	function execRequest($inputStream, $outputStream) {
-		$request = stream_get_contents($inputStream);
+	function execRequest($request) {
 		$result = $this->protocol->exec($request);
-		fwrite($outputStream, $result);
+		return $result;
 	}
 
 	public function stop() {
@@ -44,6 +38,40 @@ class RobotRemoteServer {
 
 	public function isStopped() {
 		return $this->stopped;
+	}
+
+}
+
+class DemoRequests {
+
+	private $requests = array(
+		'<?xml version="1.0"?>
+		<methodCall>
+		   <methodName>get_keyword_names</methodName>
+		   <params>
+		      </params>
+		   </methodCall>',
+		'<?xml version="1.0"?>
+		<methodCall>
+		   <methodName>stop_remote_server</methodName>
+		   <params>
+		      </params>
+		   </methodCall>'
+	);
+	private $requestsIdx = 0;
+
+	public function get() {
+		$request = $this->requests[$this->requestsIdx++];
+		echo('Request: '.$request."\n\n");
+		return $request;
+	}
+
+}
+
+class DemoResponses {
+
+	public function add($response) {
+		echo('Response: '.$response."\n\n");
 	}
 
 }
