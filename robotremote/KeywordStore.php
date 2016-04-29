@@ -35,7 +35,9 @@ class KeywordStore {
 
 	private function getAllKeywordMethods() {
 		$reflector = $this->getReflector();
-		return $this->getReflector()->getMethods();
+		$allKeywordNames = $this->getReflector()->getMethods();
+		// $allKeywordNames->addScalar("stop_remote_server"); TODO if we are to implement this keyword so that it is accessible from tests....
+		return $allKeywordNames;
 	}
 
 	private function getKeywordMethod($keywordName) {

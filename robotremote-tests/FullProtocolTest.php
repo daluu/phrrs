@@ -132,4 +132,21 @@ class FullProtocolTests extends PHPUnit_Framework_TestCase {
 </methodResponse>');
     }
 
+    public function testStopRemoteServer() {
+        $this->checkRpcCall('<?xml version="1.0"?>
+            <methodCall>
+               <methodName>stop_remote_server</methodName>
+               <params>
+               </params>
+               </methodCall>', '<?xml version="1.0"?>
+<methodResponse>
+<params>
+<param>
+<value><boolean>1</boolean></value>
+</param>
+</params>
+</methodResponse>');
+        $this->assertTrue($this->server->isStopped());
+    }
+
 }
