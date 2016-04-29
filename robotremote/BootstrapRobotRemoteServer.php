@@ -21,4 +21,4 @@ $protocol->init($keywordStore);
 $server = new RobotRemoteServer();
 $server->init($protocol);
 $serverPort = $argv[2];
-$server->start($serverPort);
+$server->startOnPort($serverPort);

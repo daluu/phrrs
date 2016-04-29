@@ -18,7 +18,7 @@ class RobotRemoteProtocol {
 	private $keywordStore;
 	private $svr;
 
-    public function getInstance() {
+    static public function getInstance() {
     	if (is_null(self::$instance)) {
     		self::$instance = new RobotRemoteProtocol();
     	}
