@@ -62,82 +62,82 @@ class RobotRemoteProtocol {
 		);
 	}
 
-	static function _get_keyword_names($xmlrpcmsg) {
-		return RobotRemoteProtocol::getInstance()->get_keyword_names($xmlrpcmsg);
+	static function _get_keyword_names($xmlrpcMsg) {
+		return RobotRemoteProtocol::getInstance()->get_keyword_names($xmlrpcMsg);
 	}
 
-	static function _run_keyword($xmlrpcmsg) {
-		return RobotRemoteProtocol::getInstance()->run_keyword($xmlrpcmsg);
+	static function _run_keyword($xmlrpcMsg) {
+		return RobotRemoteProtocol::getInstance()->run_keyword($xmlrpcMsg);
 	}
 
-	static function _get_keyword_arguments($xmlrpcmsg) {
-		return RobotRemoteProtocol::getInstance()->get_keyword_arguments($xmlrpcmsg);
+	static function _get_keyword_arguments($xmlrpcMsg) {
+		return RobotRemoteProtocol::getInstance()->get_keyword_arguments($xmlrpcMsg);
 	}
 
-	static function _get_keyword_documentation($xmlrpcmsg) {
-		return RobotRemoteProtocol::getInstance()->get_keyword_documentation($xmlrpcmsg);
+	static function _get_keyword_documentation($xmlrpcMsg) {
+		return RobotRemoteProtocol::getInstance()->get_keyword_documentation($xmlrpcMsg);
 	}
 
-	static function _stop_remote_server($xmlrpcmsg) {
-		return RobotRemoteProtocol::getInstance()->stop_remote_server($xmlrpcmsg);
+	static function _stop_remote_server($xmlrpcMsg) {
+		return RobotRemoteProtocol::getInstance()->stop_remote_server($xmlrpcMsg);
 	}
 
-	private function xmlrpcEncodeKeywordResult($keyword_result) {
+	private function xmlrpcEncodeKeywordResult($keywordResult) {
 	  // Determine keyword return data type.
-	  $type = gettype($keyword_result['return']);
-	  $xmlrpc_type = "string";
+	  $type = gettype($keywordResult['return']);
+	  $xmlrpcType = "string";
 	  switch ($type) {
 	    case "boolean":
-	      $xmlrpc_type = "boolean";
+	      $xmlrpcType = "boolean";
 	      break;
 
 	    case "integer":
-	      $xmlrpc_type = "int";
+	      $xmlrpcType = "int";
 	      break;
 
 	    case "double":
-	      $xmlrpc_type = "string";
+	      $xmlrpcType = "string";
 	      break;
 
 	    case "string":
-	      $xmlrpc_type = "string";
+	      $xmlrpcType = "string";
 	      break;
 
 	    case "array":
 	      // Todo - encode each element in array to XML-RPC val type.
-	      $xmlrpc_type = "array";
+	      $xmlrpcType = "array";
 	      break;
 
 	    case "object": // ~struct
 	      // Todo - encode individual member in object to XML-RPC val type.
-	      $xmlrpc_type = "struct";
+	      $xmlrpcType = "struct";
 	      break;
 
 	    case "resource":
-	      $xmlrpc_type = "null";
+	      $xmlrpcType = "null";
 	      break;
 
 	    case "NULL":
-	      $xmlrpc_type = "null";
+	      $xmlrpcType = "null";
 	      break;
 
 	    case "unknown type":
-	      $xmlrpc_type = "null";
+	      $xmlrpcType = "null";
 	      break;
 	  }
 	  $encoded = new Value(
 	    array(
-	      "return" => new Value($keyword_result['return'], $xmlrpc_type),
-	      "status" => new Value($keyword_result['status'], "string"),
-	      "output" => new Value($keyword_result['output'], "string"),
-	      "error" => new Value($keyword_result['error'], "string"),
-	      "traceback" => new Value($keyword_result['traceback'], "string"),
+	      "return" => new Value($keywordResult['return'], $xmlrpcType),
+	      "status" => new Value($keywordResult['status'], "string"),
+	      "output" => new Value($keywordResult['output'], "string"),
+	      "error" => new Value($keywordResult['error'], "string"),
+	      "traceback" => new Value($keywordResult['traceback'], "string"),
 	    ),
 	    "struct");
 	  return $encoded;
 	}
 
-	private function get_keyword_names($xmlrpcmsg) {
+	private function get_keyword_names($xmlrpcMsg) {
 		$keywordNames = $this->keywordStore->getKeywordNames();
 
 		$keywordNameValues = new Value(array(), "array");
@@ -148,99 +148,135 @@ class RobotRemoteProtocol {
 		return $xmlrpcResponse;
 	}
 
-	// TODO split this baby-monster method
-	private function run_keyword($xmlrpcmsg) {
-	  $numargs = $xmlrpcmsg->getNumParams();
-	  $xml_rpc_arg_list = array();
-	  $arg_list = array();
-	  for ($i = 0; $i < $numargs; $i++) {
-	    $xml_rpc_arg_list[$i] = $xmlrpcmsg->getParam($i);
-	  }
-	  $keyword_method = $xml_rpc_arg_list[0]->scalarVal();
-	  // Remove the keyword name from the argument list for the keyword.
-	  array_shift($xml_rpc_arg_list);
-	  $numargs--;
+	private function parseXmlrpcMsg($xmlrpcMsg) {
+		$numArgs = $xmlrpcMsg->getNumParams();
+		$xmlrpcArgList = array();
+		for ($i = 0; $i < $numArgs; $i++) {
+	    	$xmlrpcArgList[$i] = $xmlrpcMsg->getParam($i);
+		}
+		$keywordMethod = $xmlrpcArgList[0]->scalarVal();
+		// Remove the keyword name from the argument list for the keyword.
+		array_shift($xmlrpcArgList);
+		$numArgs--;
 
-	  // Convert argument list from XML-RPC format to PHP format.
-	  for ($i = 0; $i < $numargs; $i++) {
-	    switch ($xml_rpc_arg_list[$i]->kindOf()) {
-	      case "scalar":
-	        $arg_list[$i] = $xml_rpc_arg_list[$i]->scalarVal();
-	        break;
-
-	      case "array":
-	        // Handling simple case of array of scalars.
-	        // Todo - handle array of arrays & array of structs,
-	        // recursively or iteratively.
-	        $xml_rpc_array_size = $xml_rpc_arg_list[$i]->arraySize();
-	        $php_array = array();
-	        for ($j = 0; $j < $xml_rpc_array_size; $j++) {
-	          $php_array[$j] = $xml_rpc_arg_list[$i]->arrayMem($j)->scalarVal();
-	        }
-	        $arg_list[$i] = $php_array;
-	        break;
-
-	      case "struct":
-	        // Handling simple case of struct of scalars.
-	        // Todo - handle struct of arrays & struct of structs,
-	        // recursively or iteratively.
-	        $php_array = array();
-	        $xml_rpc_arg_list[$i]->structreset();
-	        while (list($key, $val) = $xml_rpc_arg_list[$i]->structEach()) {
-	          $php_array[$key] = $val->scalarVal();
-	        }
-	        $arg_list[$i] = $php_array;
-	        break;
-
-	      case "undef":
-	        $arg_list[$i] = NULL;
-	        break;
-	    }
-	  }
-
-	  $keyword_result = array(
-	    'status' => 'PASS',
-	    'output' => '',
-	    'error' => '',
-	    'traceback' => '',
-	    'return' => '',
-	  );
-
-	  // execute keyword based on examples from http://en.wikipedia.org/wiki/Reflection_(computer_programming)
-	  // output will always be empty since we can't redirect echo's and print's in PHP...
-
-	  try {
-	    // Per Robot Framework remote library spec, all arguments will stored in an array
-	    // as the 2nd argument to XML-RPC method call, and first argument is keyword name
-	    // which we've parsed out of array, so then arguments should be $arg_list[0]
-	    $keywordArgs = $arg_list[0];
-	    $result = $this->keywordStore->execKeyword($keyword_method, $keywordArgs);
-
-	    // using variable variables syntax
-	    //$library_instance = $this->keywordStore->getReflector()r;
-	    //$method = $keyword_method;
-	    //using variable argument list version
-	    //$result = $library_instance->$method($arg_list[0]);
-
-	    if (!is_null($result)) {
-	      $keyword_result['return'] = $result;
-	    }
-	    $xmlrpcResponse = new Response($this->xmlrpcEncodeKeywordResult($keyword_result));
-	    return $xmlrpcResponse;
-	  }
-	  catch(Exception $e){
-	    $keyword_result['return']    = "";
-	    $keyword_result['status']    = "FAIL";
-	    $keyword_result['output']    = "";
-	    $keyword_result['error']     = $e->getMessage();
-	    $keyword_result['traceback'] = $e->getTraceAsString();
-	    $xmlrpcResponse = new Response($this->xmlrpcEncodeKeywordResult($keyword_result));
-	    return $xmlrpcResponse;
-	  }
+		return array(
+			'keywordMethod' => $keywordMethod,
+			'numArgs' => $numArgs,
+			'xmlrpcArgList' => $xmlrpcArgList,
+		);
 	}
 
-	private function get_keyword_arguments($xmlrpcmsg) {
-		$keywordName = $xmlrpcmsg->getParam(0)->scalarVal();
+	private function convertXmlrpcArgsToPhp($numArgs, $xmlrpcArgList) {
+		// Convert argument list from XML-RPC format to PHP format.
+		$argList = array();
+		for ($i = 0; $i < $numArgs; $i++) {
+	   		switch ($xmlrpcArgList[$i]->kindOf()) {
+	      		case "scalar":
+	        		$argList[$i] = $xmlrpcArgList[$i]->scalarVal();
+		        break;
+
+			    case "array":
+	    		    // Handling simple case of array of scalars.
+	        		// Todo - handle array of arrays & array of structs,
+	        		// recursively or iteratively.
+	        		$xmlrpcArraySize = $xmlrpcArgList[$i]->arraySize();
+	        		$phpArray = array();
+	        		for ($j = 0; $j < $xmlrpcArraySize; $j++) {
+	          			$phpArray[$j] = $xmlrpcArgList[$i]->arrayMem($j)->scalarVal();
+	        		}
+	        		$argList[$i] = $phpArray;
+		        break;
+
+				case "struct":
+	        		// Handling simple case of struct of scalars.
+	        		// Todo - handle struct of arrays & struct of structs,
+	        		// recursively or iteratively.
+	        		$phpArray = array();
+	        		$xmlrpcArgList[$i]->structreset();
+	        		while (list($key, $val) = $xmlrpcArgList[$i]->structEach()) {
+	          			$phpArray[$key] = $val->scalarVal();
+	        		}
+	        		$argList[$i] = $phpArray;
+	        		break;
+
+	      		case "undef":
+	        		$argList[$i] = NULL;
+	        		break;
+		    }
+	  	}
+		return $argList;
+	}
+
+	private function executeKeyword($keywordMethod, $argList) {
+		$keywordResult = array(
+	    	'status' => 'PASS',
+	    	'output' => '',
+	    	'error' => '',
+	    	'traceback' => '',
+	    	'return' => '',
+	  	);
+
+		// execute keyword based on examples from http://en.wikipedia.org/wiki/Reflection_(computer_programming)
+		// output will always be empty since we can't redirect echo's and print's in PHP...
+
+	  	try {
+	    	// Per Robot Framework remote library spec, all arguments will stored in an array
+	    	// as the 2nd argument to XML-RPC method call, and first argument is keyword name
+	    	// which we've parsed out of array, so then arguments should be $argList[0]
+	    	$keywordArgs = $argList[0];
+	    	$result = $this->keywordStore->execKeyword($keywordMethod, $keywordArgs);
+
+	    	// using variable variables syntax
+	    	//$library_instance = $this->keywordStore->getReflector();
+	    	//$method = $keywordMethod;
+	    	//using variable argument list version
+	    	//$result = $library_instance->$method($argList[0]);
+
+	    	if (!is_null($result)) {
+	      		$keywordResult['return'] = $result;
+	    	}
+	  	} catch(\Exception $e) {
+		    $keywordResult['return']    = "";
+	   		$keywordResult['status']    = "FAIL";
+	    	$keywordResult['output']    = "";
+	   		$keywordResult['error']     = $e->getMessage();
+	    	$keywordResult['traceback'] = $e->getTraceAsString();
+	  	}
+
+		return $keywordResult;
+	}
+
+	// TODO split this baby-monster method
+	private function run_keyword($xmlrpcMsg) {
+		try {
+			$parsedXmlrpcMsg = $this->parseXmlrpcMsg($xmlrpcMsg);
+			$keywordMethod = $parsedXmlrpcMsg['keywordMethod'];
+			$numArgs = $parsedXmlrpcMsg['numArgs'];
+		 	$xmlrpcArgList = $parsedXmlrpcMsg['xmlrpcArgList'];
+
+			$argList = $this->convertXmlrpcArgsToPhp($numArgs, $xmlrpcArgList);
+
+			$keywordResult = $this->executeKeyword($keywordMethod, $argList);
+
+	    	$xmlrpcResponse = new Response($this->xmlrpcEncodeKeywordResult($keywordResult));
+	    	return $xmlrpcResponse;
+    	} catch (\Exception $e) {
+    		echo('
+-----------------------------------------------------
+ROBOT FRAMEWORK REMOTE SERVER KEYWORD EXECUTION ERROR
+-----------------------------------------------------
+'.$e->getMessage().'
+-----------------------------------------------------
+'.$e->getTraceAsString().'
+-----------------------------------------------------
+          ~~~~~~~~~~~~~~ END ~~~~~~~~~~~~~~
+-----------------------------------------------------
+');
+    	}
+	}
+
+	private function get_keyword_arguments($xmlrpcMsg) {
+		$keywordName = $xmlrpcMsg->getParam(0)->scalarVal();
 		// Array of ReflectionParameter objects.
 		$keywordArgumentNames = $this->keywordStore->getKeywordArguments($keywordName);
 
@@ -252,8 +288,8 @@ class RobotRemoteProtocol {
 		return $xmlrpcResponse;
 	}
 
-	private function get_keyword_documentation($xmlrpcmsg) {
-		$keywordName = $xmlrpcmsg->getParam(0)->scalarVal();
+	private function get_keyword_documentation($xmlrpcMsg) {
+		$keywordName = $xmlrpcMsg->getParam(0)->scalarVal();
 		$phpkwdoc = $this->keywordStore->getKeywordDocumentation($keywordName);
 
 		$keywordDocumentation = new Value($phpkwdoc, "string");
@@ -261,7 +297,7 @@ class RobotRemoteProtocol {
 		return $xmlrpcResponse;
 	}
 
-	private function stop_remote_server($xmlrpcmsg) {
+	private function stop_remote_server($xmlrpcMsg) {
 		$this->robotRemoteServer->stop();
 
 		$serverStopped = new Value(TRUE, "boolean");

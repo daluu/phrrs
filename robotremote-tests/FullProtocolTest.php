@@ -88,6 +88,42 @@ class FullProtocolTests extends PHPUnit_Framework_TestCase {
 </methodResponse>');
     }
 
+    public function testRunExceptionKeyword() {
+        $rpcRequest = '<?xml version="1.0"?>
+            <methodCall>
+               <methodName>run_keyword</methodName>
+               <params>
+                  <param><value><string>strings_should_be_equal</string></value></param> 
+                  <param><value><array><data>
+                  <value><string>abc</string></value>
+                  <value><string>def</string></value></data></array></value></param> 
+               </params>
+               </methodCall>';
+        $actualRpcAnswer = $this->server->execRequest($rpcRequest);
+
+        // We only check the beginning to avoid comparing the "traceback" part, containing the full stack trace, which is brittle
+        $toCheck = '<?xml version="1.0"?>
+<methodResponse>
+<params>
+<param>
+<value><struct>
+<member><name>return</name>
+<value><string></string></value>
+</member>
+<member><name>status</name>
+<value><string>FAIL</string></value>
+</member>
+<member><name>output</name>
+<value><string></string></value>
+</member>
+<member><name>error</name>
+<value><string>Given strings are not equal</string></value>
+</member>
+<member><name>traceback</name>
+<value><string>#0 [internal function]: ExampleLibrary-&gt;strings_should_be_equal(&apos;abc&apos;, &apos;def&apos;)';
+        $this->assertTrue(strpos($actualRpcAnswer, $toCheck) === 0, $actualRpcAnswer."\nDO NOT START WITH\n".$toCheck);
+    }
+
     public function testGetKeywordArguments() {
         $this->checkRpcCall('<?xml version="1.0"?>
             <methodCall>
