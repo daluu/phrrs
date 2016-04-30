@@ -34,7 +34,7 @@ class KeywordStoreTests extends PHPUnit_Framework_TestCase {
         $args = array('abc', 'abc');
         $result = $this->keywordStore->execKeyword('strings_should_be_equal', $args);
 
-        $this->assertEquals(42, $result);
+        $this->assertTrue($result);
     }
 
     public function testExecKeywordException() {
