@@ -2,7 +2,7 @@
 
 use \PhpRobotRemoteServer\KeywordStore;
 
-class KeywordStoreTests extends PHPUnit_Framework_TestCase {
+class HighLevelKeywordStoreTests extends PHPUnit_Framework_TestCase {
 
     private $keywordStore;
 
@@ -22,6 +22,10 @@ class KeywordStoreTests extends PHPUnit_Framework_TestCase {
         $this->assertEquals('truth_of_life', $keywordNames[0]);
         $this->assertEquals('strings_should_be_equal', $keywordNames[1]);
     }
+
+    // TODO tests with multiple files
+    // TODO tests with multiple classes in single file
+    // TODO tests with use of namespace in files
 
     public function testExecKeyword() {
         $args = array();

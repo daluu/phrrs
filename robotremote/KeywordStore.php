@@ -4,7 +4,16 @@ namespace PhpRobotRemoteServer;
 
 class KeywordStore {
 
-	private $keywordsDirectory;
+	/*
+	 * Map (associative array):
+	 *
+	 * Keyword/method name
+	 * => PHP file defining the keyword
+	 *  + Class name defining the keyword/method, complete with namespace
+	 *  + Arguments of the keyword
+	 *  + Documentation of the keyword
+	 */
+	var $keywords;
 
 	public function collectKeywords($keywordsDirectory) {
 		// Every php file inside $directory folder will be added.
@@ -13,86 +22,80 @@ class KeywordStore {
 		if (is_dir($directory)) {
 		  $files = scandir($directory);
 		  foreach ($files as $file) {
-		    if (!in_array($file, array('.', '..'))) {
-		      $file_infos = new \SplFileInfo($file);
-		      if ('php' === $file_infos->getExtension()) {
-		        require_once $directory . '/' . $file;
-		      }
-		    }
+		  	$fullPathFile = $directory.'/'.$file;
+		  	if (is_file($fullPathFile)) {
+			  	$this->collectKeywordsFromFile($fullPathFile);
+		  	}
+		  	// TODO else: recursive traversal of folder
 		  }
 		}
-
-		// Alternatively, instead of using constants above,
-		// you could retrofit/modify the PHP code here to take in
-		// the needed values via HTTP GET query string parameters
-		// or read from a INI/config file or database query.
 	}
 
-	private function getReflector() {
-		# PHP class name that will be used as Robot Framework keyword library
-		return new \ReflectionClass('ExampleLibrary');
+	function collectKeywordsFromFile($file) {
+		$functionsByClasses = ClassFinder::findFunctionsByClasses($file);
+		foreach ($functionsByClasses as $class => $functions) {
+			foreach ($functions as $function => $functionInfo) {
+				$rawArguments = $functionInfo['arguments'];
+				$rawDocumentation = $functionInfo['documentation'];
+				$arguments = $this->cleanUpPhpArguments($rawArguments);
+				$documentation = $this->cleanUpPhpDocumentation($rawDocumentation);
+				$this->keywords[$function] = array(
+					'file' => $file,
+					'class' => $class,
+					'arguments' => $arguments,
+					'documentation' => $documentation
+					);
+			}
+		}
 	}
 
-	private function getAllKeywordMethods() {
-		$reflector = $this->getReflector();
-		$allKeywordNames = $this->getReflector()->getMethods();
-		// $allKeywordNames->addScalar("stop_remote_server"); TODO if we are to implement this keyword so that it is accessible from tests....
-		return $allKeywordNames;
+	function cleanUpPhpArguments($rawArguments) {
+		$result = array();
+		foreach ($rawArguments as $rawArgument) {
+			$result[] = substr($rawArgument, 1);
+		}
+		return $result;
 	}
 
-	private function getKeywordMethod($keywordName) {
-		$reflector = $this->getReflector();
-		$keyword = $reflector->getMethod($keywordName);
-		return $keyword;
-	}
+	function cleanUpPhpDocumentation($rawDocumentation) {
+		$doc = $rawDocumentation;
 
-	private function getKeywordExecutorInstance($keywordName) {
-		$reflector = $this->getReflector();
-	    $libraryInstance = $reflector->newInstance();
-		return $libraryInstance;
+		// Clean up formatting of documentation
+		// (e.g. remove CRLF, tabs, and the PHP doc comment identifiers "/**...*/")
+		$doc = preg_replace("/[\010]/", "\n", $doc);
+	    $doc = preg_replace("/[\013]/", "", $doc);
+	  	$doc = preg_replace("/\s{2,}/", "", $doc);
+	  	$doc = preg_replace("/\/\*\*/", "", $doc);
+	  	$doc = preg_replace("/\*\//", "", $doc);
+	  	$doc = preg_replace("/\*\s/", "", $doc);
+
+		return $doc;
 	}
 
 	public function getKeywordNames() {
-	  $keywords = $this->getAllKeywordMethods();
-	  $keywordNames = array();
-	  foreach ($keywords as $keyword) {
-	    $keywordNames[] = $keyword->name;
-	  }
-	  return $keywordNames;
+		$keywordNames = array();
+		foreach ($this->keywords as $keywordName => $infos) {
+			$keywordNames[] = $keywordName;
+		}
+		// $keywordNames->addScalar("stop_remote_server"); TODO if we are to implement this keyword so that it is accessible from tests....
+		return $keywordNames;
 	}
 
 	public function execKeyword($keywordName, $keywordArgs) {
-	    $libraryInstance = $this->getKeywordExecutorInstance($keywordName);
-		$keywordExecutor = $this->getKeywordMethod($keywordName);
-	    $result = $keywordExecutor->invokeArgs($libraryInstance, $keywordArgs);
+		$keywordInfo = $this->keywords[$keywordName];
+		$fullFunctionName = $keywordInfo['class'].'::'.$keywordName;
+
+		require_once($keywordInfo['file']);
+		$result = call_user_func_array($fullFunctionName, $keywordArgs);
 	    return $result;
 	}
 
 	public function getKeywordArguments($keywordName) {
-	  $keyword = $this->getKeywordMethod($keywordName);
-	  // Array of ReflectionParameter objects.
-	  $keywordParams = $keyword->getParameters();
-	  $keywordParamNames = array();
-	  foreach ($keywordParams as $keywordParam) {
-	    $keywordParamNames[] = $keywordParam->name;
-	  }
-	  return $keywordParamNames;
+		return $this->keywords[$keywordName]['arguments'];
 	}
 
 	public function getKeywordDocumentation($keywordName) {
-	  $keyword = $this->getKeywordMethod($keywordName);
-	  $phpkwdoc = $keyword->getDocComment();
-
-	  // Clean up formatting of documentation
-	  // (e.g. remove CRLF, tabs, and the PHP doc comment identifiers "/**...*/")
-	  $phpkwdoc = preg_replace("/[\010]/", "\n", $phpkwdoc);
-	  $phpkwdoc = preg_replace("/[\013]/", "", $phpkwdoc);
-	  $phpkwdoc = preg_replace("/\s{2,}/", "", $phpkwdoc);
-	  $phpkwdoc = preg_replace("/\/\*\*/", "", $phpkwdoc);
-	  $phpkwdoc = preg_replace("/\*\//", "", $phpkwdoc);
-	  $phpkwdoc = preg_replace("/\*\s/", "", $phpkwdoc);
-
-	  return $phpkwdoc;
+		return $this->keywords[$keywordName]['documentation'];
 	}
 
 }

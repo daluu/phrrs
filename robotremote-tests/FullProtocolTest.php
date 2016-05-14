@@ -120,7 +120,7 @@ class FullProtocolTests extends PHPUnit_Framework_TestCase {
 <value><string>Given strings are not equal</string></value>
 </member>
 <member><name>traceback</name>
-<value><string>#0 [internal function]: ExampleLibrary-&gt;strings_should_be_equal(&apos;abc&apos;, &apos;def&apos;)';
+<value><string>#0 [internal function]: ExampleLibrary::strings_should_be_equal(&apos;abc&apos;, &apos;def&apos;)';
         $this->assertTrue(strpos($actualRpcAnswer, $toCheck) === 0, $actualRpcAnswer."\nDO NOT START WITH\n".$toCheck);
     }
 
