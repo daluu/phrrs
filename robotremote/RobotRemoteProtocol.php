@@ -11,21 +11,21 @@ ini_set('date.timezone', 'Europe/Paris');
 
 class RobotRemoteProtocol {
 
-    private static $instance = NULL;
+    private static $rpcCallInstance = NULL;
 
 	private $keywordStore;
 	private $xmlrpcProcessor;
 	private $robotRemoteServer;
 
-    static public function getInstance() {
-    	if (is_null(self::$instance)) {
-    		self::$instance = new RobotRemoteProtocol();
-    	}
-        return self::$instance;
+    private static function getRpcCallInstance() {
+        return self::$rpcCallInstance;
     }
 
 	public function init($keywordStore) {
+		self::$rpcCallInstance = $this;
+
 		$this->keywordStore = $keywordStore;
+
 		$this->xmlrpcProcessor = new \PhpXmlRpc\Server(
 			$this->getXmlRpcDispatchMap(),
 			false/*do NOT start server*/
@@ -63,23 +63,23 @@ class RobotRemoteProtocol {
 	}
 
 	static function _get_keyword_names($xmlrpcMsg) {
-		return RobotRemoteProtocol::getInstance()->get_keyword_names($xmlrpcMsg);
+		return RobotRemoteProtocol::getRpcCallInstance()->get_keyword_names($xmlrpcMsg);
 	}
 
 	static function _run_keyword($xmlrpcMsg) {
-		return RobotRemoteProtocol::getInstance()->run_keyword($xmlrpcMsg);
+		return RobotRemoteProtocol::getRpcCallInstance()->run_keyword($xmlrpcMsg);
 	}
 
 	static function _get_keyword_arguments($xmlrpcMsg) {
-		return RobotRemoteProtocol::getInstance()->get_keyword_arguments($xmlrpcMsg);
+		return RobotRemoteProtocol::getRpcCallInstance()->get_keyword_arguments($xmlrpcMsg);
 	}
 
 	static function _get_keyword_documentation($xmlrpcMsg) {
-		return RobotRemoteProtocol::getInstance()->get_keyword_documentation($xmlrpcMsg);
+		return RobotRemoteProtocol::getRpcCallInstance()->get_keyword_documentation($xmlrpcMsg);
 	}
 
 	static function _stop_remote_server($xmlrpcMsg) {
-		return RobotRemoteProtocol::getInstance()->stop_remote_server($xmlrpcMsg);
+		return RobotRemoteProtocol::getRpcCallInstance()->stop_remote_server($xmlrpcMsg);
 	}
 
 	private function xmlrpcEncodeKeywordResult($keywordResult) {

@@ -22,7 +22,7 @@ class FullProtocolTests extends PHPUnit_Framework_TestCase {
         $keywordStore = new KeywordStore();
         $keywordStore->collectKeywords(__DIR__.'/test-libraries');
 
-        $protocol = RobotRemoteProtocol::getInstance();
+        $protocol = new RobotRemoteProtocol();
         $protocol->init($keywordStore);
 
         $this->server = new RobotRemoteServer();

@@ -15,7 +15,7 @@ $keywordsDirectory = $argv[1];
 $keywordStore = new KeywordStore();
 $keywordStore->collectKeywords($keywordsDirectory);
 
-$protocol = RobotRemoteProtocol::getInstance();
+$protocol = new RobotRemoteProtocol();
 $protocol->init($keywordStore);
 
 $server = new RobotRemoteServer();
