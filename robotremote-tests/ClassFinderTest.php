@@ -30,8 +30,31 @@ class ClassFinderTests extends PHPUnit_Framework_TestCase {
                 )), $found);
     }
 
-    // TODO tests with multiple files
-    // TODO tests with multiple classes in single file
-    // TODO tests with use of namespace in files
+    public function testMultipleClassesWithNamespace() {
+        $found = $this->classFinder->findFunctionsByClasses(__DIR__.'/test-libraries-multiple-files/another-subfolder/ClassesWithNamespace.php');
+
+        $this->assertEquals(array(
+            '\\TestNamespace\\ClassWithNamespace1' => array(
+                'keywordWithNamespace1' => array(
+                    'arguments' => array(),
+                    'documentation' => ''),
+                ),
+            '\\TestNamespace\\ClassWithNamespace2' => array(
+                'keywordWithNamespace2' => array(
+                    'arguments' => array(),
+                    'documentation' => ''),
+                ),
+            '\\TestNamespace\\ClassWithNamespace3' => array(
+                'keywordWithNamespace3' => array(
+                    'arguments' => array(),
+                    'documentation' => ''),
+                'keywordWithNamespace4' => array(
+                    'arguments' => array(),
+                    'documentation' => ''),
+                'keywordWithNamespace5' => array(
+                    'arguments' => array(),
+                    'documentation' => ''),
+                )), $found);
+    }
 
 }

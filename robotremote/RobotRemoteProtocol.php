@@ -246,7 +246,6 @@ class RobotRemoteProtocol {
 		return $keywordResult;
 	}
 
-	// TODO split this baby-monster method
 	private function run_keyword($xmlrpcMsg) {
 		try {
 			$parsedXmlrpcMsg = $this->parseXmlrpcMsg($xmlrpcMsg);

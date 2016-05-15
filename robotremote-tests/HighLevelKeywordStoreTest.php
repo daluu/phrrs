@@ -23,10 +23,6 @@ class HighLevelKeywordStoreTests extends PHPUnit_Framework_TestCase {
         $this->assertEquals('strings_should_be_equal', $keywordNames[1]);
     }
 
-    // TODO tests with multiple files
-    // TODO tests with multiple classes in single file
-    // TODO tests with use of namespace in files
-
     public function testExecKeyword() {
         $args = array();
         $result = $this->keywordStore->execKeyword('truth_of_life', $args);
@@ -75,5 +71,32 @@ class HighLevelKeywordStoreTests extends PHPUnit_Framework_TestCase {
     }
 
     // TODO special characters in doc
+
+    public function testExecKeywordMultipleFiles() {
+        $this->keywordStore->collectKeywords(__DIR__.'/test-libraries-multiple-files');
+
+        $keywordsToTest = array(
+            'keywordWithNamespace1',
+            'keywordWithNamespace2',
+            'keywordWithNamespace3',
+            'keywordWithNamespace4',
+            'keywordWithNamespace5',
+            'deeplyNestedKeyword1',
+            'deeplyNestedKeyword2',
+            'deeplyNestedKeyword3',
+            'keywordInSameFolder1',
+            'keywordInSameFolder2',
+            'keywordInSameFolder3',
+            'keywordInSameFolder4',
+            'keywordInSameFolder5',
+            );
+
+        foreach ($keywordsToTest as $keywordName) {
+            $args = array();
+            $result = $this->keywordStore->execKeyword($keywordName, $args);
+
+            $this->assertEquals($keywordName, $result);
+        }
+    }
 
 }
