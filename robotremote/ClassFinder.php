@@ -11,7 +11,7 @@ namespace PhpRobotRemoteServer;
  */
 class ClassFinder {
 
-	public static function findFunctionsByClasses($file) {
+	public function findFunctionsByClasses($file) {
 		$fqnClassesFunctions = array();
 
 		$currentNamespace = '';

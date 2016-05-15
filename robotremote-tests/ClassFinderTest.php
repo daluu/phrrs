@@ -4,8 +4,10 @@ use \PhpRobotRemoteServer\ClassFinder;
 
 class ClassFinderTests extends PHPUnit_Framework_TestCase {
 
-    protected function setUp() {
+    private $classFinder;
 
+    protected function setUp() {
+        $this->classFinder = new ClassFinder();
     }
 
     protected function tearDown() {
@@ -13,7 +15,7 @@ class ClassFinderTests extends PHPUnit_Framework_TestCase {
     }
 
     public function testSingleClass() {
-        $found = ClassFinder::findFunctionsByClasses(__DIR__.'/test-libraries/ExampleLibrary.php');
+        $found = $this->classFinder->findFunctionsByClasses(__DIR__.'/test-libraries/ExampleLibrary.php');
 
         $this->assertEquals(array(
             '\\ExampleLibrary' => array(

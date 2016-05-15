@@ -2,7 +2,7 @@
 
 use \PhpRobotRemoteServer\KeywordStore;
 
-class KeywordStoreTests extends PHPUnit_Framework_TestCase {
+class KeywordStoreTest extends PHPUnit_Framework_TestCase {
 
     protected function setUp() {
 
@@ -42,10 +42,19 @@ class KeywordStoreTests extends PHPUnit_Framework_TestCase {
         $this->assertEquals('Compare 2 strings. If they are not equal, throws exception.', $actual);
     }
 
+    public function testFindFiles() {
+        $rootDir = __DIR__.'/test-libraries';
+        $keywordStore = new KeywordStore();
+        $files = $keywordStore->findFiles($rootDir);
+        $this->assertEquals(array(
+                $rootDir.'/ExampleLibrary.php'
+            ), $files);
+    }
+
     public function testCollectKeywordsFromFile() {
         $file = __DIR__.'/test-libraries/ExampleLibrary.php';
         $keywordStore = new KeywordStore();
-        $keywordStore->collectKeywordsFromFile(__DIR__.'/test-libraries/ExampleLibrary.php');
+        $keywordStore->collectKeywordsFromFile($file);
         $keywords = $keywordStore->keywords;
         $this->assertEquals(array(
             'truth_of_life' => array(

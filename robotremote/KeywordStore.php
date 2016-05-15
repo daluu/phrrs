@@ -4,6 +4,8 @@ namespace PhpRobotRemoteServer;
 
 class KeywordStore {
 
+	private $classFinder;
+
 	/*
 	 * Map (associative array):
 	 *
@@ -15,24 +17,41 @@ class KeywordStore {
 	 */
 	var $keywords;
 
+    public function __construct($classFinder = NULL) {
+    	if (!$classFinder) {
+    		$classFinder = new ClassFinder();
+    	}
+    	$this->classFinder = $classFinder;
+    }
+
 	public function collectKeywords($keywordsDirectory) {
 		// Every php file inside $directory folder will be added.
 		// Put your PHP class file(s) into that $directory folder.
-		$directory = $keywordsDirectory;
+		$files = $this->findFiles($keywordsDirectory);
+		foreach ($files as $file) {
+		  	$this->collectKeywordsFromFile($file);
+		}
+	}
+
+	function findFiles($directory) {
+		$foundFiles = array();
+
 		if (is_dir($directory)) {
 		  $files = scandir($directory);
 		  foreach ($files as $file) {
 		  	$fullPathFile = $directory.'/'.$file;
 		  	if (is_file($fullPathFile)) {
-			  	$this->collectKeywordsFromFile($fullPathFile);
+			  	$foundFiles[] = $fullPathFile;
 		  	}
 		  	// TODO else: recursive traversal of folder
 		  }
 		}
+
+		return $foundFiles;
 	}
 
 	function collectKeywordsFromFile($file) {
-		$functionsByClasses = ClassFinder::findFunctionsByClasses($file);
+		$functionsByClasses = $this->classFinder->findFunctionsByClasses($file);
 		foreach ($functionsByClasses as $class => $functions) {
 			foreach ($functions as $function => $functionInfo) {
 				$rawArguments = $functionInfo['arguments'];
