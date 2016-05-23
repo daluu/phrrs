@@ -4,7 +4,7 @@ use \PhpRobotRemoteServer\KeywordStore;
 use \PhpRobotRemoteServer\RobotRemoteServer;
 use \PhpRobotRemoteServer\RobotRemoteProtocol;
 
-class FullProtocolTest extends PHPUnit_Framework_TestCase {
+class RobotRemoteServerTest extends PHPUnit_Framework_TestCase {
 
     private $fakeRequests;
     private $fakeResponses;

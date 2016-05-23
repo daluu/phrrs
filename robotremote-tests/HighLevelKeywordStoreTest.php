@@ -2,7 +2,7 @@
 
 use \PhpRobotRemoteServer\KeywordStore;
 
-class HighLevelKeywordStoreTests extends PHPUnit_Framework_TestCase {
+class HighLevelKeywordStoreTest extends PHPUnit_Framework_TestCase {
 
     private $keywordStore;
 

@@ -2,7 +2,7 @@
 
 use \PhpRobotRemoteServer\ClassFinder;
 
-class ClassFinderTests extends PHPUnit_Framework_TestCase {
+class ClassFinderTest extends PHPUnit_Framework_TestCase {
 
     private $classFinder;
 

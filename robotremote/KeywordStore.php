@@ -17,7 +17,7 @@ class KeywordStore {
 	 */
 	var $keywords;
 
-    public function __construct($classFinder = NULL) {
+    public function __construct(ClassFinder $classFinder = NULL) {
     	if (!$classFinder) {
     		$classFinder = new ClassFinder();
     	}
@@ -65,12 +65,13 @@ class KeywordStore {
 				$rawDocumentation = $functionInfo['documentation'];
 				$arguments = $this->cleanUpPhpArguments($rawArguments);
 				$documentation = $this->cleanUpPhpDocumentation($rawDocumentation);
+				// TODO issue warning if keyword already exists
 				$this->keywords[$function] = array(
 					'file' => $file,
 					'class' => $class,
 					'arguments' => $arguments,
 					'documentation' => $documentation
-					);
+				);
 			}
 		}
 	}
@@ -99,10 +100,8 @@ class KeywordStore {
 	}
 
 	public function getKeywordNames() {
-		$keywordNames = array();
-		foreach ($this->keywords as $keywordName => $infos) {
-			$keywordNames[] = $keywordName;
-		}
+		$keywordNames = array_keys($this->keywords);
+
 		// $keywordNames->addScalar("stop_remote_server"); TODO if we are to implement this keyword so that it is accessible from tests....
 		return $keywordNames;
 	}

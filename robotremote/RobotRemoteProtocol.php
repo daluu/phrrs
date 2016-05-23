@@ -7,7 +7,7 @@ use \PhpXmlRpc\Response;
 use \PhpXmlRpc\Value;
 
 ini_set('always_populate_raw_post_data', -1);
-ini_set('date.timezone', 'Europe/Paris');
+ini_set('date.timezone', 'Europe/Paris'); // TODO maybe set a better timezone??? Or avoid entirely to force any timezone?
 
 class RobotRemoteProtocol {
 
@@ -83,58 +83,71 @@ class RobotRemoteProtocol {
 	}
 
 	private function xmlrpcEncodeKeywordResult($keywordResult) {
-	  // Determine keyword return data type.
-	  $type = gettype($keywordResult['return']);
-	  $xmlrpcType = "string";
-	  switch ($type) {
-	    case "boolean":
-	      $xmlrpcType = "boolean";
-	      break;
+		$encodedReturn = $this->xmlrpcEncodeKeywordResultValue($keywordResult['return']);
+		$encoded = new Value(
+	    	array(
+	    		'return' => $encodedReturn,
+	    		'status' => new Value($keywordResult['status'], 'string'),
+	    		'output' => new Value($keywordResult['output'], 'string'),
+	    		'error' => new Value($keywordResult['error'], 'string'),
+	    		'traceback' => new Value($keywordResult['traceback'], 'string'),
+		    ),
+	    	'struct');
+		return $encoded;
+	}
 
-	    case "integer":
-	      $xmlrpcType = "int";
-	      break;
+	function xmlrpcEncodeKeywordResultValue($keywordResultValue) {
+		/*
+		 * Determine keyword return data type, then convert to one of possible XML-RPC types:
+		 * i4, int, boolean, string, double, dateTime.iso8601, base64, array, struct, null
+		 */
+		$type = gettype($keywordResultValue);
+		$value = $keywordResultValue;
+		$xmlrpcType = 'string'; // TODO make it a server failure if can't find the type
+		switch ($type) {
+	    	case 'boolean':
+	    		$xmlrpcType = 'boolean';
+	    		break;
 
-	    case "double":
-	      $xmlrpcType = "string";
-	      break;
+		    case 'integer':
+			    $xmlrpcType = 'int';
+	    		break;
 
-	    case "string":
-	      $xmlrpcType = "string";
-	      break;
+		    case 'double':
+			    $xmlrpcType = 'string'; // TODO why not 'double'?
+	    		break;
 
-	    case "array":
-	      // Todo - encode each element in array to XML-RPC val type.
-	      $xmlrpcType = "array";
-	      break;
+		    case 'string':
+			    $xmlrpcType = 'string';
+	    		break;
 
-	    case "object": // ~struct
-	      // Todo - encode individual member in object to XML-RPC val type.
-	      $xmlrpcType = "struct";
-	      break;
+		    case 'array':
+		    	// Todo - encode each element in array to XML-RPC val type. -- "if passing an array, all array elements should be PhpXmlRpc\Value themselves"
+		    	// TODO what about associative arrays? Shouldn't we rather treat them as object's -- returning XML-RPC struct's?
+		    	$xmlrpcType = 'array';
+		      break;
 
-	    case "resource":
-	      $xmlrpcType = "null";
-	      break;
+		    case 'object': // ~struct
+			    // Todo - encode individual member in object to XML-RPC val type.
+	    		$xmlrpcType = 'struct';
+			    break;
 
-	    case "NULL":
-	      $xmlrpcType = "null";
-	      break;
+		    case 'resource':
+		    	// Unable to do anything useful with this type -- TODO issue a warning
+			    $xmlrpcType = 'null';
+	    		break;
 
-	    case "unknown type":
-	      $xmlrpcType = "null";
-	      break;
-	  }
-	  $encoded = new Value(
-	    array(
-	      "return" => new Value($keywordResult['return'], $xmlrpcType),
-	      "status" => new Value($keywordResult['status'], "string"),
-	      "output" => new Value($keywordResult['output'], "string"),
-	      "error" => new Value($keywordResult['error'], "string"),
-	      "traceback" => new Value($keywordResult['traceback'], "string"),
-	    ),
-	    "struct");
-	  return $encoded;
+		    case 'NULL':
+			    $xmlrpcType = 'null';
+	    		break;
+
+		    case 'unknown type':
+		    	// Unable to do anything useful with this type -- TODO issue a warning
+			    $xmlrpcType = 'null';
+	      		break;
+		}
+
+		return new Value($value, $xmlrpcType);
 	}
 
 	private function get_keyword_names($xmlrpcMsg) {
@@ -152,62 +165,68 @@ class RobotRemoteProtocol {
 		$numArgs = $xmlrpcMsg->getNumParams();
 		$xmlrpcArgList = array();
 		for ($i = 0; $i < $numArgs; $i++) {
-	    	$xmlrpcArgList[$i] = $xmlrpcMsg->getParam($i);
+	    	$xmlrpcArgList[] = $xmlrpcMsg->getParam($i);
 		}
 		$keywordMethod = $xmlrpcArgList[0]->scalarVal();
 		// Remove the keyword name from the argument list for the keyword.
 		array_shift($xmlrpcArgList);
-		$numArgs--;
 
 		return array(
 			'keywordMethod' => $keywordMethod,
-			'numArgs' => $numArgs,
 			'xmlrpcArgList' => $xmlrpcArgList,
 		);
 	}
 
-	private function convertXmlrpcArgsToPhp($numArgs, $xmlrpcArgList) {
+	private function convertXmlrpcArgsToPhp($xmlrpcArgList) {
 		// Convert argument list from XML-RPC format to PHP format.
-		$argList = array();
-		for ($i = 0; $i < $numArgs; $i++) {
-	   		switch ($xmlrpcArgList[$i]->kindOf()) {
-	      		case "scalar":
-	        		$argList[$i] = $xmlrpcArgList[$i]->scalarVal();
-		        break;
-
-			    case "array":
-	    		    // Handling simple case of array of scalars.
-	        		// Todo - handle array of arrays & array of structs,
-	        		// recursively or iteratively.
-	        		$xmlrpcArraySize = $xmlrpcArgList[$i]->arraySize();
-	        		$phpArray = array();
-	        		for ($j = 0; $j < $xmlrpcArraySize; $j++) {
-	          			$phpArray[$j] = $xmlrpcArgList[$i]->arrayMem($j)->scalarVal();
-	        		}
-	        		$argList[$i] = $phpArray;
-		        break;
-
-				case "struct":
-	        		// Handling simple case of struct of scalars.
-	        		// Todo - handle struct of arrays & struct of structs,
-	        		// recursively or iteratively.
-	        		$phpArray = array();
-	        		$xmlrpcArgList[$i]->structreset();
-	        		while (list($key, $val) = $xmlrpcArgList[$i]->structEach()) {
-	          			$phpArray[$key] = $val->scalarVal();
-	        		}
-	        		$argList[$i] = $phpArray;
-	        		break;
-
-	      		case "undef":
-	        		$argList[$i] = NULL;
-	        		break;
-		    }
+		$phpArgList = array();
+		foreach ($xmlrpcArgList as $xmlrpcArg) {
+		    $phpArgList[] = $this->convertXmlrpcArgToPhp($xmlrpcArg);
 	  	}
-		return $argList;
+		return $phpArgList;
 	}
 
-	private function executeKeyword($keywordMethod, $argList) {
+	function convertXmlrpcArgToPhp($xmlrpcArg) {
+		$phpArg = NULL;
+
+   		switch ($xmlrpcArg->kindOf()) {
+      		case "scalar":
+        		$phpArg = $xmlrpcArg->scalarVal();
+	        break;
+
+		    case "array":
+    		    // Handling simple case of array of scalars.
+        		// Todo - handle array of arrays & array of structs,
+        		// recursively or iteratively.
+        		$xmlrpcArraySize = $xmlrpcArg->arraySize();
+        		$phpArray = array();
+        		for ($j = 0; $j < $xmlrpcArraySize; $j++) {
+          			$phpArray[$j] = $xmlrpcArg->arrayMem($j)->scalarVal();
+        		}
+        		$phpArg = $phpArray;
+	        break;
+
+			case "struct":
+        		// Handling simple case of struct of scalars.
+        		// Todo - handle struct of arrays & struct of structs,
+        		// recursively or iteratively.
+        		$phpArray = array();
+        		$xmlrpcArg->structreset();
+        		while (list($key, $val) = $xmlrpcArg->structEach()) {
+          			$phpArray[$key] = $val->scalarVal();
+        		}
+        		$phpArg = $phpArray;
+        		break;
+
+      		case "undef":
+        		$phpArg = NULL;
+        		break;
+	    }
+
+	    return $phpArg;
+	}
+
+	private function executeKeyword($keywordMethod, $phpArgList) {
 		$keywordResult = array(
 	    	'status' => 'PASS',
 	    	'output' => '',
@@ -218,19 +237,20 @@ class RobotRemoteProtocol {
 
 		// execute keyword based on examples from http://en.wikipedia.org/wiki/Reflection_(computer_programming)
 		// output will always be empty since we can't redirect echo's and print's in PHP...
+		// TODO I'm not so sure! Why not redirect in a file and read the file? Or something else...! We'll work on this later.
 
 	  	try {
 	    	// Per Robot Framework remote library spec, all arguments will stored in an array
 	    	// as the 2nd argument to XML-RPC method call, and first argument is keyword name
-	    	// which we've parsed out of array, so then arguments should be $argList[0]
-	    	$keywordArgs = $argList[0];
+	    	// which we've parsed out of array, so then arguments should be $phpArgList[0]
+	    	$keywordArgs = $phpArgList[0];
 	    	$result = $this->keywordStore->execKeyword($keywordMethod, $keywordArgs);
 
 	    	// using variable variables syntax
 	    	//$library_instance = $this->keywordStore->getReflector();
 	    	//$method = $keywordMethod;
 	    	//using variable argument list version
-	    	//$result = $library_instance->$method($argList[0]);
+	    	//$result = $library_instance->$method($phpArgList[0]);
 
 	    	if (!is_null($result)) {
 	      		$keywordResult['return'] = $result;
@@ -250,12 +270,11 @@ class RobotRemoteProtocol {
 		try {
 			$parsedXmlrpcMsg = $this->parseXmlrpcMsg($xmlrpcMsg);
 			$keywordMethod = $parsedXmlrpcMsg['keywordMethod'];
-			$numArgs = $parsedXmlrpcMsg['numArgs'];
 		 	$xmlrpcArgList = $parsedXmlrpcMsg['xmlrpcArgList'];
 
-			$argList = $this->convertXmlrpcArgsToPhp($numArgs, $xmlrpcArgList);
+			$phpArgList = $this->convertXmlrpcArgsToPhp($xmlrpcArgList);
 
-			$keywordResult = $this->executeKeyword($keywordMethod, $argList);
+			$keywordResult = $this->executeKeyword($keywordMethod, $phpArgList);
 
 	    	$xmlrpcResponse = new Response($this->xmlrpcEncodeKeywordResult($keywordResult));
 	    	return $xmlrpcResponse;

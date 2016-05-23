@@ -48,8 +48,13 @@ class ClassFinder {
 		        }
 
    		        if ($tokens[$i][0] === T_DOC_COMMENT) {
+   		        	/*
+   		        	 * $lastDoc is reset when the function is found
+   		        	 * So that we made sure that this doc is associated to the function
+   		        	 * => Case where the function is NOT documented, will get an empty doc string
+   		        	 */
    		        	$lastDoc = $tokens[$i][1];
-   		       	} 
+   		       	}
 				
    		        if ($tokens[$i][0] === T_FUNCTION) {
    		        	$arguments = array();
