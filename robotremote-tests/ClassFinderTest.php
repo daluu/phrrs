@@ -57,4 +57,103 @@ class ClassFinderTest extends PHPUnit_Framework_TestCase {
                 )), $found);
     }
 
+    public function testBigClass() {
+        $found = $this->classFinder->findFunctionsByClasses(__DIR__.'/test-libraries-corner-cases/BigClass.php');
+
+        $this->assertEquals(array(
+            '\\BigClass' => array(
+                'truth_of_life' => array(
+                    'arguments' => array(),
+                    'documentation' => ''),
+                'strings_should_be_equal' => array(
+                    'arguments' => array('$str1', '$str2'),
+                    'documentation' => '/**
+   * Compare 2 strings. If they are not equal, throws exception.
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   * Blablablablabla, blabla, blablablablabla, blaaaaaablablablablabla
+   */'),
+                'generate_lorem_ipsum' => array(
+                    'arguments' => array(),
+                    'documentation' => ''),
+                )), $found);
+    }
+
 }
