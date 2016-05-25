@@ -1,13 +1,13 @@
 <?php
 
-use \PhpRobotRemoteServer\ClassFinder;
+use \PhpRobotRemoteServer\KeywordCollector;
 
-class ClassFinderTest extends PHPUnit_Framework_TestCase {
+class KeywordCollectorTests extends PHPUnit_Framework_TestCase {
 
-    private $classFinder;
+    private $keywordCollector;
 
     protected function setUp() {
-        $this->classFinder = new ClassFinder();
+        $this->keywordCollector = new KeywordCollector();
     }
 
     protected function tearDown() {
@@ -15,7 +15,7 @@ class ClassFinderTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testSingleClass() {
-        $found = $this->classFinder->findFunctionsByClasses(__DIR__.'/test-libraries/ExampleLibrary.php');
+        $found = $this->keywordCollector->findFunctionsByClasses(__DIR__.'/test-libraries/ExampleLibrary.php');
 
         $this->assertEquals(array(
             '\\ExampleLibrary' => array(
@@ -31,7 +31,7 @@ class ClassFinderTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testMultipleClassesWithNamespace() {
-        $found = $this->classFinder->findFunctionsByClasses(__DIR__.'/test-libraries-multiple-files/another-subfolder/ClassesWithNamespace.php');
+        $found = $this->keywordCollector->findFunctionsByClasses(__DIR__.'/test-libraries-multiple-files/another-subfolder/ClassesWithNamespace.php');
 
         $this->assertEquals(array(
             '\\TestNamespace\\ClassWithNamespace1' => array(
@@ -58,7 +58,7 @@ class ClassFinderTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testBigClass() {
-        $found = $this->classFinder->findFunctionsByClasses(__DIR__.'/test-libraries-corner-cases/BigClass.php');
+        $found = $this->keywordCollector->findFunctionsByClasses(__DIR__.'/test-libraries-corner-cases/BigClass.php');
 
         $this->assertEquals(array(
             '\\BigClass' => array(

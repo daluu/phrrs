@@ -4,7 +4,7 @@ namespace PhpRobotRemoteServer;
 
 class KeywordStore {
 
-	private $classFinder;
+	private $keywordCollector;
 	private $verbose;
 
 	/*
@@ -18,13 +18,13 @@ class KeywordStore {
 	 */
 	var $keywords;
 
-    public function __construct($verbose = TRUE, $classFinder = NULL) {
+    public function __construct($verbose = TRUE, $keywordCollector = NULL) {
     	$this->verbose = $verbose;
 
-    	if (!$classFinder) {
-    		$classFinder = new ClassFinder();
+    	if (!$keywordCollector) {
+    		$keywordCollector = new KeywordCollector();
     	}
-    	$this->classFinder = $classFinder;
+    	$this->keywordCollector = $keywordCollector;
     }
 
 	public function collectKeywords($keywordsDirectory) {
@@ -72,7 +72,7 @@ class KeywordStore {
 			echo('Looking for keyword definitions into: '.$file."\n");
 		}
 
-		$functionsByClasses = $this->classFinder->findFunctionsByClasses($file);
+		$functionsByClasses = $this->keywordCollector->findFunctionsByClasses($file);
 		foreach ($functionsByClasses as $class => $functions) {
 			foreach ($functions as $function => $functionInfo) {
 				$rawArguments = $functionInfo['arguments'];

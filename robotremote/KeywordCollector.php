@@ -9,7 +9,7 @@ namespace PhpRobotRemoteServer;
  * array of all the functions associated with each class, with arguments and
  * documentation for each function.
  */
-class ClassFinder {
+class KeywordCollector {
 
 	public function findFunctionsByClasses($file) {
 		$fqnClassesFunctions = array();
