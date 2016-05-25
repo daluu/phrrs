@@ -12,6 +12,12 @@ if ($argvCount < 3) {
 }
 
 $keywordsDirectory = $argv[1];
+$serverPort = $argv[2];
+
+if (!is_numeric($serverPort)) {
+	die("Port must be a number\n");
+}
+
 $keywordStore = new KeywordStore();
 $keywordStore->collectKeywords($keywordsDirectory);
 
@@ -20,5 +26,4 @@ $protocol->init($keywordStore);
 
 $server = new RobotRemoteServer();
 $server->init($protocol);
-$serverPort = $argv[2];
 $server->startOnPort($serverPort);
