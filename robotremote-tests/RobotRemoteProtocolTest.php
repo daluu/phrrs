@@ -165,10 +165,11 @@ class RobotRemoteProtocolTest extends PHPUnit_Framework_TestCase {
     // TODO tests for struct's of non-scalar (not yet supported in code anyway)
 
     public function testConvertXmlrpcArgToPhpUndef() {
-        // TODO need some mock -- something along these lines:
-        // $value = $this->getMockBuilder('\PhpXmlRpc\Value')->disabledOriginalConstructor()->setMethods(['scalartyp']);
-        // $value->expects($this->once())->method('scalartyp')->willReturn('undef');
+        $xmlrpcValue = $this->getMockBuilder('\PhpXmlRpc\Value')->disableOriginalConstructor()->setMethods(['kindOf'])->getMock();
+        $xmlrpcValue->expects($this->once())->method('kindOf')->willReturn('undef');
 
+        $phpValue = $this->protocol->convertXmlrpcArgToPhp($xmlrpcValue);
+        $this->assertNUll($phpValue);
     }
 
 }
