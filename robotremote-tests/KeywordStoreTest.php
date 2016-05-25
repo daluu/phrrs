@@ -44,7 +44,7 @@ class KeywordStoreTest extends PHPUnit_Framework_TestCase {
 
     public function testFindFilesBasic() {
         $rootDir = __DIR__.'/test-libraries';
-        $keywordStore = new KeywordStore();
+        $keywordStore = new KeywordStore(FALSE);
         $files = $keywordStore->findFiles($rootDir);
         $this->assertEquals(array(
                 $rootDir.'/ExampleLibrary.php'
@@ -53,7 +53,7 @@ class KeywordStoreTest extends PHPUnit_Framework_TestCase {
 
     public function testFindFilesMultipleFiles() {
         $rootDir = __DIR__.'/test-libraries-multiple-files';
-        $keywordStore = new KeywordStore();
+        $keywordStore = new KeywordStore(FALSE);
         $files = $keywordStore->findFiles($rootDir);
 
         // Make sure check do not depend on the order of the elements: sorting the result
@@ -69,7 +69,7 @@ class KeywordStoreTest extends PHPUnit_Framework_TestCase {
 
     public function testCollectKeywordsFromFile() {
         $file = __DIR__.'/test-libraries/ExampleLibrary.php';
-        $keywordStore = new KeywordStore();
+        $keywordStore = new KeywordStore(FALSE);
         $keywordStore->collectKeywordsFromFile($file);
         $keywords = $keywordStore->keywords;
         $this->assertEquals(array(
@@ -88,7 +88,7 @@ class KeywordStoreTest extends PHPUnit_Framework_TestCase {
 
     public function testCollectKeywordsMultipleFiles() {
         $rootDir = __DIR__.'/test-libraries-multiple-files';
-        $keywordStore = new KeywordStore();
+        $keywordStore = new KeywordStore(FALSE);
         $keywordStore->collectKeywords($rootDir);
         $keywords = $keywordStore->keywords;
         $this->assertEquals(array(
@@ -160,6 +160,99 @@ class KeywordStoreTest extends PHPUnit_Framework_TestCase {
                     'arguments' => array(),
                     'documentation' => ''),
              ), $keywords);
+    }
+
+    public function testKeywordReport() {
+        $rootDir = __DIR__.'/test-libraries-multiple-files';
+        $keywordStore = new KeywordStore(FALSE);
+        $keywordStore->keywords = array(
+            'keywordWithNamespace1' => array(
+                    'file' => $rootDir.'/another-subfolder/ClassesWithNamespace.php',
+                    'class' => '\\TestNamespace\\ClassWithNamespace1',
+                    'arguments' => array(),
+                    'documentation' => ''),
+            'keywordWithNamespace2' => array(
+                    'file' => $rootDir.'/another-subfolder/ClassesWithNamespace.php',
+                    'class' => '\\TestNamespace\\ClassWithNamespace2',
+                    'arguments' => array(),
+                    'documentation' => ''),
+            'keywordWithNamespace3' => array(
+                    'file' => $rootDir.'/another-subfolder/ClassesWithNamespace.php',
+                    'class' => '\\TestNamespace\\ClassWithNamespace3',
+                    'arguments' => array(),
+                    'documentation' => ''),
+            'keywordWithNamespace4' => array(
+                    'file' => $rootDir.'/another-subfolder/ClassesWithNamespace.php',
+                    'class' => '\\TestNamespace\\ClassWithNamespace3',
+                    'arguments' => array(),
+                    'documentation' => ''),
+            'keywordWithNamespace5' => array(
+                    'file' => $rootDir.'/another-subfolder/ClassesWithNamespace.php',
+                    'class' => '\\TestNamespace\\ClassWithNamespace3',
+                    'arguments' => array(),
+                    'documentation' => ''),
+
+            'deeplyNestedKeyword1' => array(
+                    'file' => $rootDir.'/subfolder/deeply-nested/DeeplyNestedClasses.php',
+                    'class' => '\\DeeplyNestedClass1',
+                    'arguments' => array(),
+                    'documentation' => ''),
+            'deeplyNestedKeyword2' => array(
+                    'file' => $rootDir.'/subfolder/deeply-nested/DeeplyNestedClasses.php',
+                    'class' => '\\DeeplyNestedClass1',
+                    'arguments' => array(),
+                    'documentation' => ''),
+            'deeplyNestedKeyword3' => array(
+                    'file' => $rootDir.'/subfolder/deeply-nested/DeeplyNestedClasses.php',
+                    'class' => '\\DeeplyNestedClass2',
+                    'arguments' => array(),
+                    'documentation' => ''),
+
+            'keywordInSameFolder1' => array(
+                    'file' => $rootDir.'/subfolder/MultipleClassInSameFolder1.php',
+                    'class' => '\\MultipleClassInSameFolder1',
+                    'arguments' => array(),
+                    'documentation' => ''),
+            'keywordInSameFolder2' => array(
+                    'file' => $rootDir.'/subfolder/MultipleClassInSameFolder1.php',
+                    'class' => '\\MultipleClassInSameFolder1',
+                    'arguments' => array(),
+                    'documentation' => ''),
+            'keywordInSameFolder3' => array(
+                    'file' => $rootDir.'/subfolder/MultipleClassInSameFolder1.php',
+                    'class' => '\\MultipleClassInSameFolder1',
+                    'arguments' => array(),
+                    'documentation' => ''),
+            'keywordInSameFolder4' => array(
+                    'file' => $rootDir.'/subfolder/MultipleClassInSameFolder2.php',
+                    'class' => '\\MultipleClassInSameFolder2',
+                    'arguments' => array(),
+                    'documentation' => ''),
+            'keywordInSameFolder5' => array(
+                    'file' => $rootDir.'/subfolder/MultipleClassInSameFolder3.php',
+                    'class' => '\\MultipleClassInSameFolder3',
+                    'arguments' => array(),
+                    'documentation' => ''),
+             );
+
+        $keywordReport = $keywordStore->keywordReport();
+
+        $this->assertEquals(array(
+                'keywordWithNamespace1' => $rootDir.'/another-subfolder/ClassesWithNamespace.php',
+                'keywordWithNamespace2' => $rootDir.'/another-subfolder/ClassesWithNamespace.php',
+                'keywordWithNamespace3' => $rootDir.'/another-subfolder/ClassesWithNamespace.php',
+                'keywordWithNamespace4' => $rootDir.'/another-subfolder/ClassesWithNamespace.php',
+                'keywordWithNamespace5' => $rootDir.'/another-subfolder/ClassesWithNamespace.php',
+                'deeplyNestedKeyword1' => $rootDir.'/subfolder/deeply-nested/DeeplyNestedClasses.php',
+                'deeplyNestedKeyword2' => $rootDir.'/subfolder/deeply-nested/DeeplyNestedClasses.php',
+                'deeplyNestedKeyword3' => $rootDir.'/subfolder/deeply-nested/DeeplyNestedClasses.php',
+                'keywordInSameFolder1' => $rootDir.'/subfolder/MultipleClassInSameFolder1.php',
+                'keywordInSameFolder2' => $rootDir.'/subfolder/MultipleClassInSameFolder1.php',
+                'keywordInSameFolder3' => $rootDir.'/subfolder/MultipleClassInSameFolder1.php',
+                'keywordInSameFolder4' => $rootDir.'/subfolder/MultipleClassInSameFolder2.php',
+                'keywordInSameFolder5' => $rootDir.'/subfolder/MultipleClassInSameFolder3.php',
+            ),
+            $keywordReport);
     }
 
 }

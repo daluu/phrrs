@@ -7,7 +7,7 @@ class HighLevelKeywordStoreTest extends PHPUnit_Framework_TestCase {
     private $keywordStore;
 
     protected function setUp() {
-        $this->keywordStore = new KeywordStore();
+        $this->keywordStore = new KeywordStore(FALSE);
         $this->keywordStore->collectKeywords(__DIR__.'/test-libraries');
     }
 

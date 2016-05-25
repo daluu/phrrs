@@ -13,7 +13,7 @@ class FullProtocolTest extends PHPUnit_Framework_TestCase {
          * TODO we could fake KeywordStore instead of loading files from disk :
          * would me more efficient, more self contained and more stable.
          */
-        $keywordStore = new KeywordStore();
+        $keywordStore = new KeywordStore(FALSE);
         $keywordStore->collectKeywords(__DIR__.'/test-libraries');
 
         $protocol = new RobotRemoteProtocol();
