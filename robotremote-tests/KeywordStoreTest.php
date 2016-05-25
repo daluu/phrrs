@@ -70,6 +70,7 @@ class KeywordStoreTest extends PHPUnit_Framework_TestCase {
     public function testCollectKeywordsFromFile() {
         $file = __DIR__.'/test-libraries/ExampleLibrary.php';
         $keywordStore = new KeywordStore(FALSE);
+        $keywordStore->keywords = array();
         $keywordStore->collectKeywordsFromFile($file);
         $keywords = $keywordStore->keywords;
         $this->assertEquals(array(
@@ -159,6 +160,26 @@ class KeywordStoreTest extends PHPUnit_Framework_TestCase {
                     'class' => '\\MultipleClassInSameFolder3',
                     'arguments' => array(),
                     'documentation' => ''),
+             ), $keywords);
+    }
+
+    public function testCollectKeywordsDuplicateDefinitions() {
+        $rootDir = __DIR__.'/test-libraries-duplicate-keywords';
+        $keywordStore = new KeywordStore(FALSE);
+        $keywordStore->keywords = array();
+        $keywordStore->collectKeywords($rootDir);
+        $keywords = $keywordStore->keywords;
+        $this->assertEquals(array(
+            'truth_of_life' => array(
+                    'file' => $rootDir.'/FirstKeywordDefinition.php',
+                    'class' => '\\FirstKeywordDefinition',
+                    'arguments' => array(),
+                    'documentation' => ''),
+            'strings_should_be_equal' => array(
+                    'file' => $rootDir.'/SecondKeywordDefinition.php',
+                    'class' => '\\SecondKeywordDefinition',
+                    'arguments' => array('str1', 'str2'),
+                    'documentation' => 'Compare 2 strings. If they are not equal, throws exception.')
              ), $keywords);
     }
 

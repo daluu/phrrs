@@ -18,7 +18,7 @@ class KeywordStore {
 	 */
 	var $keywords;
 
-    public function __construct($verbose = TRUE, $keywordCollector = NULL) {
+    public function __construct($verbose = TRUE, KeywordCollector $keywordCollector = NULL) {
     	$this->verbose = $verbose;
 
     	if (!$keywordCollector) {
@@ -79,13 +79,19 @@ class KeywordStore {
 				$rawDocumentation = $functionInfo['documentation'];
 				$arguments = $this->cleanUpPhpArguments($rawArguments);
 				$documentation = $this->cleanUpPhpDocumentation($rawDocumentation);
-				// TODO issue warning if keyword already exists
-				$this->keywords[$function] = array(
-					'file' => $file,
-					'class' => $class,
-					'arguments' => $arguments,
-					'documentation' => $documentation
-				);
+
+				if (array_key_exists($function, $this->keywords)) {
+					if ($this->verbose) {
+						echo("WARNING: keyword '".$function."' already declared in: ".$this->keywords[$function]['file']."\n");
+					}
+				} else {
+					$this->keywords[$function] = array(
+						'file' => $file,
+						'class' => $class,
+						'arguments' => $arguments,
+						'documentation' => $documentation
+					);
+				}
 			}
 		}
 	}
