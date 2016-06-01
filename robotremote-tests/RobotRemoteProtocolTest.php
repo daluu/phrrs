@@ -50,12 +50,25 @@ class RobotRemoteProtocolTest extends PHPUnit_Framework_TestCase {
         $value = $this->protocol->xmlrpcEncodeKeywordResultValue(array('un peu', 'beaucoup', 'passionnément', 'à la folie', 'pas du tout'));
         $this->assertEquals('array', $value->kindOf());
         $this->assertEquals(5, $value->arraysize());
-        // TODO: values below ought to be be PhpXmlRpc\Value, not the strings... That's the todo in the code in action
-        $this->assertEquals('un peu', $value->arraymem(0));
-        $this->assertEquals('beaucoup', $value->arraymem(1));
-        $this->assertEquals('passionnément', $value->arraymem(2));
-        $this->assertEquals('à la folie', $value->arraymem(3));
-        $this->assertEquals('pas du tout', $value->arraymem(4));
+        $this->assertEquals('scalar', $value->arraymem(0)->kindOf());
+        $this->assertEquals('string', $value->arraymem(0)->scalartyp());
+        $this->assertEquals('un peu', $value->arraymem(0)->scalarval());
+        $this->assertEquals('scalar', $value->arraymem(1)->kindOf());
+        $this->assertEquals('string', $value->arraymem(1)->scalartyp());
+        $this->assertEquals('beaucoup', $value->arraymem(1)->scalarval());
+        $this->assertEquals('scalar', $value->arraymem(2)->kindOf());
+        $this->assertEquals('string', $value->arraymem(2)->scalartyp());
+        $this->assertEquals('passionnément', $value->arraymem(2)->scalarval());
+        $this->assertEquals('scalar', $value->arraymem(3)->kindOf());
+        $this->assertEquals('string', $value->arraymem(3)->scalartyp());
+        $this->assertEquals('à la folie', $value->arraymem(3)->scalarval());
+        $this->assertEquals('scalar', $value->arraymem(4)->kindOf());
+        $this->assertEquals('string', $value->arraymem(4)->scalartyp());
+        $this->assertEquals('pas du tout', $value->arraymem(4)->scalarval());
+    }
+    
+    public function testXmlrpcEncodeKeywordResultValueNestedArray() {
+        // TODO
     }
     
     public function testXmlrpcEncodeKeywordResultValueObject() {
@@ -144,22 +157,36 @@ class RobotRemoteProtocolTest extends PHPUnit_Framework_TestCase {
             ), $phpValue);
     }
 
-    public function testConvertXmlrpcArgToPhpNestedArray() { // TODO!!!
-        // $phpValue = $this->protocol->convertXmlrpcArgToPhp(new Value(array(
-        //         new Value(4, 'int'),
-        //         new Value(FALSE, 'boolean'),
-        //         new Value('foobar', 'string'),
-        //         new Value(NULL, 'null'),
-        //         new Value(9.2321, 'double'),
-        //     ), 'array'));
-        // $this->assertInternalType('array', $phpValue);
-        // $this->assertEquals(array(
-        //         4,
-        //         FALSE,
-        //         'foobar',
-        //         NULL,
-        //         9.2321
-        //     ), $phpValue);
+    public function testConvertXmlrpcArgToPhpNestedArray() {
+        $phpValue = $this->protocol->convertXmlrpcArgToPhp(new Value(array(
+                new Value(4, 'int'),
+                new Value(array(
+                    new Value(FALSE, 'boolean'),
+                    new Value('foobar', 'string'),
+                    new Value(NULL, 'null'),
+                    new Value(array(
+                        new Value(42, 'int'),
+                        new Value(array(), 'array'),
+                        new Value(7, 'int'),
+                    ), 'array'),
+                    new Value(9.2321, 'double'),
+                ), 'array'),
+            ), 'array'));
+        $this->assertInternalType('array', $phpValue);
+        $this->assertEquals(array(
+                4,
+                array(
+                    FALSE,
+                    'foobar',
+                    NULL,
+                    array(
+                        42,
+                        array(),
+                        7
+                    ),
+                    9.2321
+                ),
+            ), $phpValue);
     }
 
     // TODO tests for array's of non-scalar (not yet supported in code anyway)

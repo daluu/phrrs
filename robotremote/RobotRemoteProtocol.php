@@ -123,8 +123,11 @@ class RobotRemoteProtocol {
 	    		break;
 
 		    case 'array':
-		    	// Todo - encode each element in array to XML-RPC val type. -- "if passing an array, all array elements should be PhpXmlRpc\Value themselves"
 		    	// TODO what about associative arrays? Shouldn't we rather treat them as object's -- returning XML-RPC struct's?
+		    	$value = array();
+		    	foreach ($keywordResultValue as $elem) {
+		    		$value[] = $this->xmlrpcEncodeKeywordResultValue($elem);
+		    	}
 		    	$xmlrpcType = 'array';
 		      break;
 
@@ -196,13 +199,10 @@ class RobotRemoteProtocol {
 	        break;
 
 		    case "array":
-    		    // Handling simple case of array of scalars.
-        		// Todo - handle array of arrays & array of structs,
-        		// recursively or iteratively.
         		$xmlrpcArraySize = $xmlrpcArg->arraySize();
         		$phpArray = array();
         		for ($j = 0; $j < $xmlrpcArraySize; $j++) {
-          			$phpArray[$j] = $xmlrpcArg->arrayMem($j)->scalarVal();
+          			$phpArray[$j] = $this->convertXmlrpcArgToPhp($xmlrpcArg->arrayMem($j));
         		}
         		$phpArg = $phpArray;
 	        break;

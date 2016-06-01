@@ -11,13 +11,12 @@ class ComplexDataKeywords {
   }
 
   public function list_string($listString) {
-    var_dump($listString);
     foreach ($listString as $string) {
       if (!is_string($string)) {
         throw new Exception("Not a list of string");
       }
     }
-    return $listInt;
+    return $listString;
   }
 
   // TODO list of other stuff
