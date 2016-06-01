@@ -18,9 +18,10 @@ class HighLevelKeywordStoreTest extends PHPUnit_Framework_TestCase {
     public function testGetKeywordNames() {
         $keywordNames = $this->keywordStore->getKeywordNames();
 
-        $this->assertEquals(2, count($keywordNames));
+        $this->assertEquals(3, count($keywordNames));
         $this->assertEquals('truth_of_life', $keywordNames[0]);
         $this->assertEquals('strings_should_be_equal', $keywordNames[1]);
+        $this->assertEquals('stop_remote_server', $keywordNames[2]);
     }
 
     public function testExecKeyword() {

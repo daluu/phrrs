@@ -6,8 +6,13 @@ use \PhpRobotRemoteServer\SocketInterface;
 
 class RobotRemoteServer {
 
+	private $verbose;
 	private $protocol;
 	private $stopped = FALSE;
+
+    public function __construct($verbose = TRUE) {
+    	$this->verbose = $verbose;
+    }
 
 	public function init($protocol) {
 		$this->protocol = $protocol;
@@ -16,7 +21,7 @@ class RobotRemoteServer {
 
 	public function startOnPort($serverPort) {
 		$socketInterface = new SocketInterface();
-		$socketInterface->startSession($serverPort);
+		$socketInterface->startSession($serverPort, $this->verbose);
 
 		$this->start($socketInterface, $socketInterface);
 

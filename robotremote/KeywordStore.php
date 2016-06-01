@@ -6,6 +6,7 @@ class KeywordStore {
 
 	private $keywordCollector;
 	private $verbose;
+	private $stoppableServer;
 
 	/*
 	 * Map (associative array):
@@ -25,6 +26,10 @@ class KeywordStore {
     		$keywordCollector = new KeywordCollector();
     	}
     	$this->keywordCollector = $keywordCollector;
+    }
+
+    public function setStoppableServer($stoppableServer) {
+    	$this->stoppableServer = $stoppableServer;
     }
 
 	public function collectKeywords($keywordsDirectory) {
@@ -131,12 +136,16 @@ class KeywordStore {
 
 	public function getKeywordNames() {
 		$keywordNames = array_keys($this->keywords);
-
-		// $keywordNames->addScalar("stop_remote_server"); TODO if we are to implement this keyword so that it is accessible from tests....
+		$keywordNames[] = 'stop_remote_server';
 		return $keywordNames;
 	}
 
 	public function execKeyword($keywordName, $keywordArgs) {
+		if ($keywordName == 'stop_remote_server') {
+			$this->stoppableServer->stop();
+			return;
+		}
+
 		$keywordInfo = $this->keywords[$keywordName];
 		$fullFunctionName = $keywordInfo['class'].'::'.$keywordName;
 
@@ -146,10 +155,18 @@ class KeywordStore {
 	}
 
 	public function getKeywordArguments($keywordName) {
+		if ($keywordName == 'stop_remote_server') {
+			return array();
+		}
+
 		return $this->keywords[$keywordName]['arguments'];
 	}
 
 	public function getKeywordDocumentation($keywordName) {
+		if ($keywordName == 'stop_remote_server') {
+			return 'Stops the server';
+		}
+
 		return $this->keywords[$keywordName]['documentation'];
 	}
 

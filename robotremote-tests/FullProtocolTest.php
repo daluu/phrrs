@@ -47,6 +47,7 @@ class FullProtocolTest extends PHPUnit_Framework_TestCase {
 <data>
 <value><string>truth_of_life</string></value>
 <value><string>strings_should_be_equal</string></value>
+<value><string>stop_remote_server</string></value>
 </data>
 </array></value>
 </param>

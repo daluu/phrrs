@@ -34,6 +34,7 @@ class RobotRemoteProtocol {
 
 	public function setRobotRemoteServer($robotRemoteServer) {
 		$this->robotRemoteServer = $robotRemoteServer;
+		$this->keywordStore->setStoppableServer($robotRemoteServer);
 	}
 
 	public function exec($data) {

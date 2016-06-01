@@ -143,6 +143,25 @@ class RobotRemoteProtocolTest extends PHPUnit_Framework_TestCase {
                 9.2321
             ), $phpValue);
     }
+
+    public function testConvertXmlrpcArgToPhpNestedArray() { // TODO!!!
+        // $phpValue = $this->protocol->convertXmlrpcArgToPhp(new Value(array(
+        //         new Value(4, 'int'),
+        //         new Value(FALSE, 'boolean'),
+        //         new Value('foobar', 'string'),
+        //         new Value(NULL, 'null'),
+        //         new Value(9.2321, 'double'),
+        //     ), 'array'));
+        // $this->assertInternalType('array', $phpValue);
+        // $this->assertEquals(array(
+        //         4,
+        //         FALSE,
+        //         'foobar',
+        //         NULL,
+        //         9.2321
+        //     ), $phpValue);
+    }
+
     // TODO tests for array's of non-scalar (not yet supported in code anyway)
 
     public function testConvertXmlrpcArgToPhpStructScalar() {
