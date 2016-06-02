@@ -16,10 +16,10 @@ class FullProtocolTest extends PHPUnit_Framework_TestCase {
         $keywordStore = new KeywordStore(FALSE);
         $keywordStore->collectKeywords(__DIR__.'/test-libraries');
 
-        $protocol = new RobotRemoteProtocol();
+        $protocol = new RobotRemoteProtocol(FALSE);
         $protocol->init($keywordStore);
 
-        $this->server = new RobotRemoteServer();
+        $this->server = new RobotRemoteServer(FALSE);
         $this->server->init($protocol);
     }
 

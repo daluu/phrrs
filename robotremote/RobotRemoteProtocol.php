@@ -17,9 +17,14 @@ class RobotRemoteProtocol {
 	private $keywordStore;
 	private $xmlrpcProcessor;
 	private $robotRemoteServer;
+	private $verbose;
 
     private static function getRpcCallInstance() {
         return self::$rpcCallInstance;
+    }
+
+    public function __construct($verbose = TRUE) {
+    	$this->verbose = $verbose;
     }
 
 	public function init($keywordStore) {
@@ -105,7 +110,7 @@ class RobotRemoteProtocol {
 		 */
 		$type = gettype($keywordResultValue);
 		$encodedValue = $keywordResultValue;
-		$xmlrpcType = 'string'; // TODO make it a server failure if can't find the type
+		$xmlrpcType = NULL;
 		switch ($type) {
 	    	case 'boolean':
 	    		$xmlrpcType = 'boolean';
@@ -148,18 +153,25 @@ class RobotRemoteProtocol {
 			    break;
 
 		    case 'resource':
-		    	// Unable to do anything useful with this type -- TODO issue a warning
+		    	if ($this->verbose) {
+		    		echo("WARNING: processing a PHP value of type 'resource', unable to pass it back via XML-RPC: ".$keywordResultValue."\n");
+			    }
 			    $xmlrpcType = 'null';
 	    		break;
 
 		    case 'NULL':
-			    $xmlrpcType = 'null'; // TODO or an empty array? What would be the most useful?
+			    $xmlrpcType = 'null';
 	    		break;
 
 		    case 'unknown type':
-		    	// Unable to do anything useful with this type -- TODO issue a warning
+		    	if ($this->verbose) {
+		   	 		echo("WARNING: processing a PHP value of type 'unknown type', unable to pass it back via XML-RPC: ".$keywordResultValue."\n");
+		   		}
 			    $xmlrpcType = 'null';
 	      		break;
+
+	      	default:
+	      		throw new \Exception('Unable to resolve type of keyword result value: '.$keywordResultValue);
 		}
 
 		return new Value($encodedValue, $xmlrpcType);
@@ -223,9 +235,6 @@ class RobotRemoteProtocol {
 		        break;
 
 			case 'struct':
-        		// Handling simple case of struct of scalars.
-        		// Todo - handle struct of arrays & struct of structs,
-        		// recursively or iteratively.
         		$phpArray = array();
         		foreach ($xmlrpcArg as $key => $xmlrpcValue) {
           			$phpArray[$key] = $this->convertXmlrpcArgToPhp($xmlrpcValue);
@@ -253,6 +262,12 @@ class RobotRemoteProtocol {
 		// execute keyword based on examples from http://en.wikipedia.org/wiki/Reflection_(computer_programming)
 		// output will always be empty since we can't redirect echo's and print's in PHP...
 		// TODO I'm not so sure! Why not redirect in a file and read the file? Or something else...! We'll work on this later.
+		// Also, have a look here: http://stackoverflow.com/questions/139474/how-can-i-capture-the-result-of-var-dump-to-a-string
+		// PHP functions: ob_start, ob_get_clean and so on...
+		// ob_start();
+		// var_dump($someVar);
+		// $result = ob_get_clean();
+		// strip_tags($result);
 
 	  	try {
 	    	// Per Robot Framework remote library spec, all arguments will stored in an array
@@ -271,14 +286,18 @@ class RobotRemoteProtocol {
 	      		$keywordResult['return'] = $result;
 	    	}
 	  	} catch(\Exception $e) {
-		    $keywordResult['return']    = "";
-	   		$keywordResult['status']    = "FAIL";
-	    	$keywordResult['output']    = "";
-	   		$keywordResult['error']     = $e->getMessage();
-	    	$keywordResult['traceback'] = $e->getTraceAsString();
+	  		$this->setKeywordResultError($keywordResult, $e);
 	  	}
 
 		return $keywordResult;
+	}
+
+	private function setKeywordResultError(&$keywordResult, $exception) {
+	    $keywordResult['return']    = "";
+   		$keywordResult['status']    = "FAIL";
+    	$keywordResult['output']    = "";
+   		$keywordResult['error']     = $exception->getMessage();
+    	$keywordResult['traceback'] = $exception->getTraceAsString();
 	}
 
 	private function run_keyword($xmlrpcMsg) {

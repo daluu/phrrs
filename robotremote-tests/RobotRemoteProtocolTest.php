@@ -9,7 +9,7 @@ class RobotRemoteProtocolTest extends PHPUnit_Framework_TestCase {
     private $protocol;
 
     protected function setUp() {
-        $this->protocol = new RobotRemoteProtocol();
+        $this->protocol = new RobotRemoteProtocol(FALSE);
     }
 
     protected function tearDown() {

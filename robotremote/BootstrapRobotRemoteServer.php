@@ -38,7 +38,7 @@ for ($i = 1; $i < $argvCount; $i++) {
 $keywordStore = new KeywordStore($verbose);
 $keywordStore->collectKeywords($keywordsDirectory);
 
-$protocol = new RobotRemoteProtocol();
+$protocol = new RobotRemoteProtocol($verbose);
 $protocol->init($keywordStore);
 
 $server = new RobotRemoteServer($verbose);
