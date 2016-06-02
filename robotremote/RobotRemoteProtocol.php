@@ -6,8 +6,9 @@ use \PhpXmlRpc\Server;
 use \PhpXmlRpc\Response;
 use \PhpXmlRpc\Value;
 
-ini_set('always_populate_raw_post_data', -1);
-ini_set('date.timezone', 'Europe/Paris'); // TODO maybe set a better timezone??? Or avoid entirely to force any timezone?
+// TODO are these finally needed? When run as CLI...
+//ini_set('always_populate_raw_post_data', -1);
+//ini_set('date.timezone', 'Europe/Paris'); // TODO maybe set a better timezone??? Or avoid entirely to force any timezone?
 
 class RobotRemoteProtocol {
 
@@ -103,7 +104,7 @@ class RobotRemoteProtocol {
 		 * i4, int, boolean, string, double, dateTime.iso8601, base64, array, struct, null
 		 */
 		$type = gettype($keywordResultValue);
-		$value = $keywordResultValue;
+		$encodedValue = $keywordResultValue;
 		$xmlrpcType = 'string'; // TODO make it a server failure if can't find the type
 		switch ($type) {
 	    	case 'boolean':
@@ -123,17 +124,27 @@ class RobotRemoteProtocol {
 	    		break;
 
 		    case 'array':
-		    	// TODO what about associative arrays? Shouldn't we rather treat them as object's -- returning XML-RPC struct's?
-		    	$value = array();
-		    	foreach ($keywordResultValue as $elem) {
-		    		$value[] = $this->xmlrpcEncodeKeywordResultValue($elem);
+		    	$encodedValue = array();
+		    	if ($this->isAssociativeArray($keywordResultValue)) {
+			    	foreach ($keywordResultValue as $elemKey => $elemValue) {
+			    		$encodedValue[$elemKey] = $this->xmlrpcEncodeKeywordResultValue($elemValue);
+			    	}
+			    	$xmlrpcType = 'struct';
+		    	} else {
+			    	foreach ($keywordResultValue as $elem) {
+			    		$encodedValue[] = $this->xmlrpcEncodeKeywordResultValue($elem);
+			    	}
+			    	$xmlrpcType = 'array';
 		    	}
-		    	$xmlrpcType = 'array';
 		      break;
 
-		    case 'object': // ~struct
-			    // Todo - encode individual member in object to XML-RPC val type.
-	    		$xmlrpcType = 'struct';
+		    case 'object': // treat it as an associative array
+		    	$encodedValue = array();
+		    	$asAnAssociativeArray = get_object_vars($keywordResultValue);
+		    	foreach ($asAnAssociativeArray as $elemKey => $elemValue) {
+		    		$encodedValue[$elemKey] = $this->xmlrpcEncodeKeywordResultValue($elemValue);
+		    	}
+		    	$xmlrpcType = 'struct';
 			    break;
 
 		    case 'resource':
@@ -142,7 +153,7 @@ class RobotRemoteProtocol {
 	    		break;
 
 		    case 'NULL':
-			    $xmlrpcType = 'null';
+			    $xmlrpcType = 'null'; // TODO or an empty array? What would be the most useful?
 	    		break;
 
 		    case 'unknown type':
@@ -151,8 +162,13 @@ class RobotRemoteProtocol {
 	      		break;
 		}
 
-		return new Value($value, $xmlrpcType);
+		return new Value($encodedValue, $xmlrpcType);
 	}
+
+	function isAssociativeArray($arr) {
+    	return count($arr)>0 && array_keys($arr) !== range(0, count($arr) - 1);
+	}
+
 
 	private function get_keyword_names($xmlrpcMsg) {
 		$keywordNames = $this->keywordStore->getKeywordNames();
@@ -181,7 +197,7 @@ class RobotRemoteProtocol {
 		);
 	}
 
-	private function convertXmlrpcArgsToPhp($xmlrpcArgList) {
+	private function convertXmlrpcArgListToPhp($xmlrpcArgList) {
 		// Convert argument list from XML-RPC format to PHP format.
 		$phpArgList = array();
 		foreach ($xmlrpcArgList as $xmlrpcArg) {
@@ -194,32 +210,30 @@ class RobotRemoteProtocol {
 		$phpArg = NULL;
 
    		switch ($xmlrpcArg->kindOf()) {
-      		case "scalar":
+      		case 'scalar':
         		$phpArg = $xmlrpcArg->scalarVal();
-	        break;
+		        break;
 
-		    case "array":
-        		$xmlrpcArraySize = $xmlrpcArg->arraySize();
+		    case 'array':
         		$phpArray = array();
-        		for ($j = 0; $j < $xmlrpcArraySize; $j++) {
-          			$phpArray[$j] = $this->convertXmlrpcArgToPhp($xmlrpcArg->arrayMem($j));
+        		foreach ($xmlrpcArg as $xmlrpcValue) {
+          			$phpArray[] = $this->convertXmlrpcArgToPhp($xmlrpcValue);
         		}
         		$phpArg = $phpArray;
-	        break;
+		        break;
 
-			case "struct":
+			case 'struct':
         		// Handling simple case of struct of scalars.
         		// Todo - handle struct of arrays & struct of structs,
         		// recursively or iteratively.
         		$phpArray = array();
-        		$xmlrpcArg->structreset();
-        		while (list($key, $val) = $xmlrpcArg->structEach()) {
-          			$phpArray[$key] = $val->scalarVal();
+        		foreach ($xmlrpcArg as $key => $xmlrpcValue) {
+          			$phpArray[$key] = $this->convertXmlrpcArgToPhp($xmlrpcValue);
         		}
         		$phpArg = $phpArray;
         		break;
 
-      		case "undef":
+      		case 'undef':
         		$phpArg = NULL;
         		break;
 	    }
@@ -273,7 +287,7 @@ class RobotRemoteProtocol {
 			$keywordMethod = $parsedXmlrpcMsg['keywordMethod'];
 		 	$xmlrpcArgList = $parsedXmlrpcMsg['xmlrpcArgList'];
 
-			$phpArgList = $this->convertXmlrpcArgsToPhp($xmlrpcArgList);
+			$phpArgList = $this->convertXmlrpcArgListToPhp($xmlrpcArgList);
 
 			$keywordResult = $this->executeKeyword($keywordMethod, $phpArgList);
 
