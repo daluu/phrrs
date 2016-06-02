@@ -25,8 +25,8 @@ class PybotTest extends PHPUnit_Framework_TestCase {
         $this->runPybotCheckSuccess(__DIR__.'/test-libraries', __DIR__.'/test-robot-framework/BasicExample.robot');
     }
 
-    public function testListString() {
-        $this->runPybotCheckSuccess(__DIR__.'/test-libraries-complex-data', __DIR__.'/test-robot-framework/ListString.robot');
+    public function testBasicList() {
+        $this->runPybotCheckSuccess(__DIR__.'/test-libraries-complex-data', __DIR__.'/test-robot-framework/BasicList.robot');
     }
 
 }
