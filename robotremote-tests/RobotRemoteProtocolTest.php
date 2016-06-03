@@ -1,5 +1,6 @@
 <?php
 
+use \PhpRobotRemoteServer\KeywordStore;
 use \PhpRobotRemoteServer\RobotRemoteProtocol;
 
 use \PhpXmlRpc\Value;
@@ -136,7 +137,7 @@ class RobotRemoteProtocolTest extends PHPUnit_Framework_TestCase {
     }
     
     public function testXmlrpcEncodeKeywordResultValueObject() {
-        $encodedValue = $this->protocol->xmlrpcEncodeKeywordResultValue(new TestClass());
+        $encodedValue = $this->protocol->xmlrpcEncodeKeywordResultValue(new SamplePhpClassToShareInXmlrpc());
         $this->assertEquals('struct', $encodedValue->kindOf());
         $this->assertEquals(4, count($encodedValue));
         $this->checkScalar($encodedValue['field1'], 'string', 'beginning');
@@ -328,39 +329,67 @@ class RobotRemoteProtocolTest extends PHPUnit_Framework_TestCase {
         $this->assertNUll($phpValue);
     }
 
+    /* ----- tests of isAssociativeArray ------ */
+
     public function testIsAssociativeArray1() {
         $array = array('a', 'b', 'c');
-        $isAssoviative = $this->protocol->isAssociativeArray($array);
-        $this->assertFalse($isAssoviative);
+        $isAssociative = $this->protocol->isAssociativeArray($array);
+        $this->assertFalse($isAssociative);
     }
 
     public function testIsAssociativeArray2() {
         $array = array("0" => 'a', "1" => 'b', "2" => 'c');
-        $isAssoviative = $this->protocol->isAssociativeArray($array);
-        $this->assertFalse($isAssoviative);
+        $isAssociative = $this->protocol->isAssociativeArray($array);
+        $this->assertFalse($isAssociative);
     }
 
     public function testIsAssociativeArray3() {
         $array = array("1" => 'a', "0" => 'b', "2" => 'c');
-        $isAssoviative = $this->protocol->isAssociativeArray($array);
-        $this->assertTrue($isAssoviative);
+        $isAssociative = $this->protocol->isAssociativeArray($array);
+        $this->assertTrue($isAssociative);
     }
 
     public function testIsAssociativeArray4() {
         $array = array("a" => 'a', "b" => 'b', "c" => 'c');
-        $isAssoviative = $this->protocol->isAssociativeArray($array);
-        $this->assertTrue($isAssoviative);
+        $isAssociative = $this->protocol->isAssociativeArray($array);
+        $this->assertTrue($isAssociative);
     }
 
     public function testIsAssociativeArrayEmpty() {
         $array = array();
-        $isAssoviative = $this->protocol->isAssociativeArray($array);
-        $this->assertFalse($isAssoviative);
+        $isAssociative = $this->protocol->isAssociativeArray($array);
+        $this->assertFalse($isAssociative);
+    }
+
+    /* ----- tests of executeKeyword ------ */
+
+    public function testExecuteKeyword() {
+        $testKeywordStore = new TestExecKeywordStore();
+        $this->protocol->init($testKeywordStore);
+
+        $result = $this->protocol->executeKeyword('coolMethod', array('nice arg', 'beautiful arg', 'handsome arg'));
+        $this->assertEquals('', $result['error']); // check error first: will contain the useful info to debug when test goes bad
+        $this->assertEquals('PASS', $result['status']);
+        $this->assertEquals('', $result['output']);
+        $this->assertEquals('', $result['traceback']);
+        $this->assertEquals('Call to: coolMethod(nice arg, beautiful arg, handsome arg)', $result['return']);
+    }
+
+    public function testExecuteKeywordCaptureStdout() {
+        $testKeywordStore = new TestExecKeywordStoreStdout();
+        $this->protocol->init($testKeywordStore);
+
+        $result = $this->protocol->executeKeyword('coolMethod', array('nice arg', 'beautiful arg', 'handsome arg'));
+        $this->assertEquals('', $result['error']); // check error first: will contain the useful info to debug when test goes bad
+        $this->assertEquals('PASS', $result['status']);
+        $this->assertEquals('Call to: coolMethod(nice arg, beautiful arg, handsome arg)', $result['output']);
+        $this->assertEquals('', $result['traceback']);
+        $this->assertEquals('', $result['return']);
     }
 
 }
 
-class TestClass {
+class SamplePhpClassToShareInXmlrpc {
     var $field1 = 'beginning';
     var $field2 = 'next';
     var $field3 = 'final';
@@ -369,4 +398,16 @@ class TestClass {
     protected $protectedField = 'protected';
     static $staticField = 'static';
     function notAField() { }
+}
+
+class TestExecKeywordStore extends KeywordStore {
+    public function execKeyword($keywordName, $keywordArgs) {
+        return 'Call to: '.$keywordName.'('.implode(', ', $keywordArgs).')';
+    }
+}
+
+class TestExecKeywordStoreStdout extends KeywordStore {
+    public function execKeyword($keywordName, $keywordArgs) {
+        echo('Call to: '.$keywordName.'('.implode(', ', $keywordArgs).')');
+    }
 }

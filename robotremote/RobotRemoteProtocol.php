@@ -27,7 +27,7 @@ class RobotRemoteProtocol {
     	$this->verbose = $verbose;
     }
 
-	public function init($keywordStore) {
+	public function init(KeywordStore $keywordStore) {
 		self::$rpcCallInstance = $this;
 
 		$this->keywordStore = $keywordStore;
@@ -250,54 +250,33 @@ class RobotRemoteProtocol {
 	    return $phpArg;
 	}
 
-	private function executeKeyword($keywordMethod, $phpArgList) {
-		$keywordResult = array(
-	    	'status' => 'PASS',
-	    	'output' => '',
-	    	'error' => '',
-	    	'traceback' => '',
-	    	'return' => '',
-	  	);
+	function executeKeyword($keywordMethod, $keywordArgs) {
+		$keywordResult = array();
 
-		// execute keyword based on examples from http://en.wikipedia.org/wiki/Reflection_(computer_programming)
-		// output will always be empty since we can't redirect echo's and print's in PHP...
-		// TODO I'm not so sure! Why not redirect in a file and read the file? Or something else...! We'll work on this later.
-		// Also, have a look here: http://stackoverflow.com/questions/139474/how-can-i-capture-the-result-of-var-dump-to-a-string
-		// PHP functions: ob_start, ob_get_clean and so on...
-		// ob_start();
-		// var_dump($someVar);
-		// $result = ob_get_clean();
-		// strip_tags($result);
-
+		// Code to capture stdout comes from: http://stackoverflow.com/questions/139474/how-can-i-capture-the-result-of-var-dump-to-a-string
+  		ob_start();
 	  	try {
-	    	// Per Robot Framework remote library spec, all arguments will stored in an array
-	    	// as the 2nd argument to XML-RPC method call, and first argument is keyword name
-	    	// which we've parsed out of array, so then arguments should be $phpArgList[0]
-	    	$keywordArgs = $phpArgList[0];
 	    	$result = $this->keywordStore->execKeyword($keywordMethod, $keywordArgs);
-
-	    	// using variable variables syntax
-	    	//$library_instance = $this->keywordStore->getReflector();
-	    	//$method = $keywordMethod;
-	    	//using variable argument list version
-	    	//$result = $library_instance->$method($phpArgList[0]);
-
-	    	if (!is_null($result)) {
-	      		$keywordResult['return'] = $result;
+	    	if (is_null($result)) {
+	      		$result = '';
 	    	}
+
+	    	// keyword execution success case
+      		$keywordResult['status'] = 'PASS';
+      		$keywordResult['return'] = $result;
+      		$keywordResult['error'] = '';
+      		$keywordResult['traceback'] = '';
 	  	} catch(\Exception $e) {
-	  		$this->setKeywordResultError($keywordResult, $e);
+	    	// keyword execution failure case
+	   		$keywordResult['status']    = 'FAIL';
+		    $keywordResult['return']    = '';
+	   		$keywordResult['error']     = $e->getMessage();
+	    	$keywordResult['traceback'] = $e->getTraceAsString();
 	  	}
+    	$output = ob_get_clean();
+    	$keywordResult['output'] = $output;
 
 		return $keywordResult;
-	}
-
-	private function setKeywordResultError(&$keywordResult, $exception) {
-	    $keywordResult['return']    = "";
-   		$keywordResult['status']    = "FAIL";
-    	$keywordResult['output']    = "";
-   		$keywordResult['error']     = $exception->getMessage();
-    	$keywordResult['traceback'] = $exception->getTraceAsString();
 	}
 
 	private function run_keyword($xmlrpcMsg) {
@@ -308,7 +287,11 @@ class RobotRemoteProtocol {
 
 			$phpArgList = $this->convertXmlrpcArgListToPhp($xmlrpcArgList);
 
-			$keywordResult = $this->executeKeyword($keywordMethod, $phpArgList);
+	    	// Per Robot Framework remote library spec, all arguments will stored in an array
+	    	// as the 2nd argument to XML-RPC method call, and first argument is keyword name
+	    	// which we've parsed out of array, so then arguments should be $phpArgList[0]
+	    	$keywordArgs = $phpArgList[0];
+			$keywordResult = $this->executeKeyword($keywordMethod, $keywordArgs);
 
 	    	$xmlrpcResponse = new Response($this->xmlrpcEncodeKeywordResult($keywordResult));
 	    	return $xmlrpcResponse;
