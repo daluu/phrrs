@@ -42,6 +42,15 @@ class KeywordStoreTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals('Compare 2 strings. If they are not equal, throws exception.', $actual);
     }
 
+    public function testFindFilesSingleFile() {
+        $file = __DIR__.'/test-libraries/ExampleLibrary.php';
+        $keywordStore = new KeywordStore(FALSE);
+        $files = $keywordStore->findFiles($file);
+        $this->assertEquals(array(
+                $file
+            ), $files);
+    }
+
     public function testFindFilesBasic() {
         $rootDir = __DIR__.'/test-libraries';
         $keywordStore = new KeywordStore(FALSE);

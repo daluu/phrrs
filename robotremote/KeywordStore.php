@@ -54,21 +54,19 @@ class KeywordStore {
 		return $foundFiles;
 	}
 
-	private function recursiveFileLookup($directory, &$foundFiles) {
-		if (is_dir($directory)) {
-		  	$elements = scandir($directory);
+	private function recursiveFileLookup($path, &$foundFiles) {
+		if (is_dir($path)) {
+		  	$elements = scandir($path);
 		  	foreach ($elements as $element) {
 		  		if ($element === '.' || $element === '..') {
 		  			continue;
 		  		} else {
-			  		$fullPathFile = $directory.'/'.$element;
-		  			if (is_dir($fullPathFile)) {
-			  			$this->recursiveFileLookup($fullPathFile, $foundFiles);
-		  			} else {
-				  		$foundFiles[] = $fullPathFile;
-		  			}
+			  		$fullPathFile = $path.'/'.$element;
+		  			$this->recursiveFileLookup($fullPathFile, $foundFiles);
 		  		}
 		  	}
+		} else {
+	  		$foundFiles[] = $path;
 		}
 	}
 
