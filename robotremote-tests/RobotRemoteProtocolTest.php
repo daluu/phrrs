@@ -69,7 +69,7 @@ class RobotRemoteProtocolTest extends PHPUnit_Framework_TestCase {
     }
     
     public function testXmlrpcEncodeKeywordResultValueNestedArray() {
-        // TODO not a very readable test, especially the 'check' part... Too much a complex a test?
+        // TODO not a very readable test, especially the 'check' part... Is this test too complex?
         $encodedValue = $this->protocol->xmlrpcEncodeKeywordResultValue(array(
             'k1' => 'v1',
             'k2' => array(
