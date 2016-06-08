@@ -6,10 +6,6 @@ use \PhpXmlRpc\Server;
 use \PhpXmlRpc\Response;
 use \PhpXmlRpc\Value;
 
-// TODO are these finally needed? When run as CLI...
-//ini_set('always_populate_raw_post_data', -1);
-//ini_set('date.timezone', 'Europe/Paris'); // TODO maybe set a better timezone??? Or avoid entirely to force any timezone?
-
 class RobotRemoteProtocol {
 
     private static $rpcCallInstance = NULL;
@@ -40,7 +36,7 @@ class RobotRemoteProtocol {
 
 	public function setRobotRemoteServer($robotRemoteServer) {
 		$this->robotRemoteServer = $robotRemoteServer;
-		$this->keywordStore->setStoppableServer($robotRemoteServer);
+		$this->keywordStore->addStopRemoteServerKeyword(__FILE__, __CLASS__);
 	}
 
 	public function exec($data) {
@@ -52,41 +48,41 @@ class RobotRemoteProtocol {
 		  // XML-RPC function/method name.
 		  'get_keyword_names' => array(
 		    // PHP function name of the XML-RPC function/method.
-		    'function' => '\PhpRobotRemoteServer\RobotRemoteProtocol::_get_keyword_names',
+		    'function' => '\PhpRobotRemoteServer\RobotRemoteProtocol::get_keyword_names',
 		  ),
 		  'run_keyword' => array(
-		    'function' => '\PhpRobotRemoteServer\RobotRemoteProtocol::_run_keyword',
+		    'function' => '\PhpRobotRemoteServer\RobotRemoteProtocol::run_keyword',
 		  ),
 		  'get_keyword_arguments' => array(
-		    'function' => '\PhpRobotRemoteServer\RobotRemoteProtocol::_get_keyword_arguments',
+		    'function' => '\PhpRobotRemoteServer\RobotRemoteProtocol::get_keyword_arguments',
 		  ),
 		  'get_keyword_documentation' => array(
-		    'function' => '\PhpRobotRemoteServer\RobotRemoteProtocol::_get_keyword_documentation',
+		    'function' => '\PhpRobotRemoteServer\RobotRemoteProtocol::get_keyword_documentation',
 		  ),
 		  'stop_remote_server' => array(
-		    'function' => '\PhpRobotRemoteServer\RobotRemoteProtocol::_stop_remote_server',
+		    'function' => '\PhpRobotRemoteServer\RobotRemoteProtocol::stop_remote_server',
 		  ),
 		);
 	}
 
-	static function _get_keyword_names($xmlrpcMsg) {
-		return RobotRemoteProtocol::getRpcCallInstance()->get_keyword_names($xmlrpcMsg);
+	static function get_keyword_names($xmlrpcMsg) {
+		return RobotRemoteProtocol::getRpcCallInstance()->getKeywordNames($xmlrpcMsg);
 	}
 
-	static function _run_keyword($xmlrpcMsg) {
-		return RobotRemoteProtocol::getRpcCallInstance()->run_keyword($xmlrpcMsg);
+	static function run_keyword($xmlrpcMsg) {
+		return RobotRemoteProtocol::getRpcCallInstance()->runKeyword($xmlrpcMsg);
 	}
 
-	static function _get_keyword_arguments($xmlrpcMsg) {
-		return RobotRemoteProtocol::getRpcCallInstance()->get_keyword_arguments($xmlrpcMsg);
+	static function get_keyword_arguments($xmlrpcMsg) {
+		return RobotRemoteProtocol::getRpcCallInstance()->getKeywordArguments($xmlrpcMsg);
 	}
 
-	static function _get_keyword_documentation($xmlrpcMsg) {
-		return RobotRemoteProtocol::getRpcCallInstance()->get_keyword_documentation($xmlrpcMsg);
+	static function get_keyword_documentation($xmlrpcMsg) {
+		return RobotRemoteProtocol::getRpcCallInstance()->getKeywordDocumentation($xmlrpcMsg);
 	}
 
-	static function _stop_remote_server($xmlrpcMsg) {
-		return RobotRemoteProtocol::getRpcCallInstance()->stop_remote_server($xmlrpcMsg);
+	static function stop_remote_server($xmlrpcMsg = NULL) {
+		return RobotRemoteProtocol::getRpcCallInstance()->stopRemoteServer();
 	}
 
 	private function xmlrpcEncodeKeywordResult($keywordResult) {
@@ -181,8 +177,7 @@ class RobotRemoteProtocol {
     	return count($arr)>0 && array_keys($arr) !== range(0, count($arr) - 1);
 	}
 
-
-	private function get_keyword_names($xmlrpcMsg) {
+	private function getKeywordNames($xmlrpcMsg) {
 		$keywordNames = $this->keywordStore->getKeywordNames();
 
 		$keywordNameValues = new Value(array(), "array");
@@ -279,7 +274,7 @@ class RobotRemoteProtocol {
 		return $keywordResult;
 	}
 
-	private function run_keyword($xmlrpcMsg) {
+	private function runKeyword($xmlrpcMsg) {
 		try {
 			$parsedXmlrpcMsg = $this->parseXmlrpcMsg($xmlrpcMsg);
 			$keywordMethod = $parsedXmlrpcMsg['keywordMethod'];
@@ -310,7 +305,7 @@ ROBOT FRAMEWORK REMOTE SERVER KEYWORD EXECUTION ERROR
     	}
 	}
 
-	private function get_keyword_arguments($xmlrpcMsg) {
+	private function getKeywordArguments($xmlrpcMsg) {
 		$keywordName = $xmlrpcMsg->getParam(0)->scalarVal();
 		// Array of ReflectionParameter objects.
 		$keywordArgumentNames = $this->keywordStore->getKeywordArguments($keywordName);
@@ -323,7 +318,7 @@ ROBOT FRAMEWORK REMOTE SERVER KEYWORD EXECUTION ERROR
 		return $xmlrpcResponse;
 	}
 
-	private function get_keyword_documentation($xmlrpcMsg) {
+	private function getKeywordDocumentation($xmlrpcMsg) {
 		$keywordName = $xmlrpcMsg->getParam(0)->scalarVal();
 		$phpkwdoc = $this->keywordStore->getKeywordDocumentation($keywordName);
 
@@ -332,7 +327,7 @@ ROBOT FRAMEWORK REMOTE SERVER KEYWORD EXECUTION ERROR
 		return $xmlrpcResponse;
 	}
 
-	private function stop_remote_server($xmlrpcMsg) {
+	private function stopRemoteServer() {
 		$this->robotRemoteServer->stop();
 
 		$serverStopped = new Value(TRUE, "boolean");

@@ -9,6 +9,7 @@ class HighLevelKeywordStoreTest extends PHPUnit_Framework_TestCase {
     protected function setUp() {
         $this->keywordStore = new KeywordStore(FALSE);
         $this->keywordStore->collectKeywords(__DIR__.'/test-libraries');
+        $this->keywordStore->addStopRemoteServerKeyword('', '');
     }
 
     protected function tearDown() {
@@ -71,7 +72,7 @@ class HighLevelKeywordStoreTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals('Compare 2 strings. If they are not equal, throws exception.', $keywordDoc);
     }
 
-    // TODO special characters in doc
+    // TODO test special characters in doc
 
     public function testExecKeywordMultipleFiles() {
         $this->keywordStore->collectKeywords(__DIR__.'/test-libraries-multiple-files');

@@ -6,7 +6,6 @@ class KeywordStore {
 
 	private $keywordCollector;
 	private $verbose;
-	private $stoppableServer;
 
 	/*
 	 * Map (associative array):
@@ -26,10 +25,6 @@ class KeywordStore {
     		$keywordCollector = new KeywordCollector();
     	}
     	$this->keywordCollector = $keywordCollector;
-    }
-
-    public function setStoppableServer($stoppableServer) {
-    	$this->stoppableServer = $stoppableServer;
     }
 
 	public function collectKeywords($keywordsDirectory) {
@@ -132,18 +127,18 @@ class KeywordStore {
 		return $keywordReport;
 	}
 
+    public function addStopRemoteServerKeyword($stopRemoteServerKeywordFile, $stopRemoteServerKeywordClass) {
+    	$this->keywords['stop_remote_server']['file'] = $stopRemoteServerKeywordFile;
+    	$this->keywords['stop_remote_server']['class'] = $stopRemoteServerKeywordClass;
+    	$this->keywords['stop_remote_server']['arguments'] = array();
+    	$this->keywords['stop_remote_server']['documentation'] = 'Stops the server';
+    }
+
 	public function getKeywordNames() {
-		$keywordNames = array_keys($this->keywords);
-		$keywordNames[] = 'stop_remote_server';
-		return $keywordNames;
+		return array_keys($this->keywords);
 	}
 
 	public function execKeyword($keywordName, $keywordArgs) {
-		if ($keywordName == 'stop_remote_server') {
-			$this->stoppableServer->stop();
-			return;
-		}
-
 		$keywordInfo = $this->keywords[$keywordName];
 		$fullFunctionName = $keywordInfo['class'].'::'.$keywordName;
 
@@ -153,18 +148,10 @@ class KeywordStore {
 	}
 
 	public function getKeywordArguments($keywordName) {
-		if ($keywordName == 'stop_remote_server') {
-			return array();
-		}
-
 		return $this->keywords[$keywordName]['arguments'];
 	}
 
 	public function getKeywordDocumentation($keywordName) {
-		if ($keywordName == 'stop_remote_server') {
-			return 'Stops the server';
-		}
-
 		return $this->keywords[$keywordName]['documentation'];
 	}
 
