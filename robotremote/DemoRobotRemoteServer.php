@@ -24,13 +24,6 @@ $server->start(new DemoRequests(), new DemoResponses());
 
 class DemoRequests {
 
-	private $stopRequest = '<?xml version="1.0"?>
-		<methodCall>
-		   <methodName>stop_remote_server</methodName>
-		   <params>
-		      </params>
-		   </methodCall>';
-
 	private $requests = array(
 		'<?xml version="1.0"?>
 		<methodCall>
@@ -38,7 +31,14 @@ class DemoRequests {
 		   <params>
 		      </params>
 		   </methodCall>',
-		$this->stopRequest // always keep this one or the server will loop endlessly
+		   
+		// always keep this one below or the server will loop endlessly		   
+		'<?xml version="1.0"?>
+		<methodCall>
+		   <methodName>stop_remote_server</methodName>
+		   <params>
+		      </params>
+		   </methodCall>'
 	);
 	private $requestsIdx = 0;
 
