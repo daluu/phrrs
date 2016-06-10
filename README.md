@@ -51,7 +51,7 @@ A comprehensive test suite is provided with this project, using PhpUnit. There i
 
 Run the tests to check that nothing is broken and that the installation went fine:
 ```
-vendor/phpunit/phpunit/phpunit robotremote-tests/
+vendor/phpunit/phpunit/phpunit tests/
 ```
 
 Running the remote server
@@ -60,7 +60,7 @@ Running the remote server
 The remote server is started using PHP CLI and runs completely indepently of Apache:
 
 ```
-php robotremote/BootstrapRobotRemoteServer.php <path-to-the-keywords-implementation-root-directory> <port-on-which-the-server-shall-listen-to>
+php src/BootstrapRobotRemoteServer.php <path-to-the-keywords-implementation-root-directory> <port-on-which-the-server-shall-listen-to>
 ```
 
 You can define keyword implementations in as much files as you like. Constraints and allowances:
@@ -95,7 +95,7 @@ Logging in the keyword implementations:
 
 Extra! if you want to play around with the XML-RPC protocol, you can run some 'demo' instance of the remote server code that will print out what is received and sent back by the server: (just modify the file to add more XML messages)
 ```
-php robotremote/DemoRobotRemoteServer.php <path-to-the-keywords-implementation-root-directory>
+php src/DemoRobotRemoteServer.php <path-to-the-keywords-implementation-root-directory>
 ```
 
 Need help?
