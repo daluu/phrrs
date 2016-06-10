@@ -67,6 +67,7 @@ You can define keyword implementations in as much files as you like. Constraints
 * Function names define the keyword names
 * The functions/keywords must be in a class
 * **Calls to these functions will be made statically**; `$this` will not be available
+* If the same keyword is declared twice (i.e. two functions with the same name in different classes) then only one of them will be taken into account, and a warning will be issued
 * Namespaces can be used
 * Any number of classes can be used, several classes per file is OK, class names not matching the file names is OK
 * Any number of files can be used, sub-folders can be used and will be recursively crawled
@@ -100,7 +101,5 @@ php src/DemoRobotRemoteServer.php <path-to-the-keywords-implementation-root-dire
 
 Need help?
 -----
-
-For inquiries:
 
 You can post inquiries to Robot Framework Users Google Group as I am a member of that group and periodically check it. If there is enough inquiry activity, I may start a Google Group, etc. for it. You may also file GitHub issues to the project for me to look into as well.
