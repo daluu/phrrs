@@ -29,6 +29,12 @@ Or, maybe more simple, directly download the `composer.phar` PHP executable and 
 wget https://getcomposer.org/composer.phar
 ```
 
+Finally, the test suite contains some end-to-end tests that uses `pybot`, Robot Framework's test case runner. So you'll need `pybot` installed and available in the PATH for these tests to run. This may sound like an obvious requirement since you are certainly looking for PHRRS in order to run Robot Framework test cases, but maybe you will use `jybot` instead of `pybot`, or maybe your `pybot` executable will not be globally installed and available in the PATH. You can check that `pybot` is available with the following command:
+
+```
+pybot --version
+```
+
 Installation
 -----
 
