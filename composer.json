@@ -1,5 +1,5 @@
 {
-    "name": "phrrs/phrrs",
+    "name": "jplambert/phrrs",
     "description": "PHp Robot Remote Server",
     "homepage": "https://github.com/jplambert/phrrs",
     "keywords": [ "xmlrpc", "robotframework" ],
