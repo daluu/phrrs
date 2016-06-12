@@ -14,5 +14,6 @@
         "psr-4": {
             "PhpRobotRemoteServer\\": "src/"
         }
-    }
+    },
+    "bin": ["bin/php-robot-remote-server"]
 }
