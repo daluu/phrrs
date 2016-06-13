@@ -2,8 +2,6 @@
 
 namespace PhpRobotRemoteServer;
 
-require __DIR__.'/../vendor/autoload.php';
-
 $argvCount = count($argv);
 if ($argvCount < 3) {
 	die("Missing parameters: path to the keywords implementation in PHP + port that the server must use\n");

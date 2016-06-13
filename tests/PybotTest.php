@@ -10,7 +10,7 @@ class PybotTest extends PHPUnit_Framework_TestCase {
 
         $port = 8270;
         $pybotCommand = 'pybot --variable PHP_REMOTE_HOST:localhost:'.$port.' -o NONE -l NONE -r NONE '.$robotFile;
-        $robotRemoteCommand = 'php '.__DIR__.'/../src/BootstrapRobotRemoteServer.php '.$testLibraries.' '.$port.' --quiet';
+        $robotRemoteCommand = 'php '.__DIR__.'/../src/StartRobotRemoteServer.php '.$testLibraries.' '.$port.' --quiet';
 
         $robotRemote = popen($robotRemoteCommand, 'w');
         // TODO wait a little? Not needed so far...

@@ -9,4 +9,4 @@ while [ -h "$SELF_PATH" ]; do
 done
 
 SELF_DIR=$(dirname -- "$SELF_PATH")
-exec php ${SELF_DIR}/../src/BootstrapRobotRemoteServer.php "$@"
+exec php ${SELF_DIR}/../src/StartRobotRemoteServerAsVendor.php "$@"
