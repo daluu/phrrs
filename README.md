@@ -69,7 +69,7 @@ php composer.phar install
 Running the remote server
 -----
 
-THe remote server start command is accessible from the handy `vendor/bin` directory:
+The remote server start command is accessible from the handy `vendor/bin` directory:
 
 ```
 vendor/bin/php-robot-remote-server <path-to-the-keywords-implementation-root-directory> <port-on-which-the-server-shall-listen-to>
@@ -114,7 +114,7 @@ vendor/phpunit/phpunit/phpunit tests/
 Running the remote server
 -----
 
-The remote server is started using PHP CLI and runs completely indepently of Apache:
+The remote server is started using PHP CLI and runs indepently of Apache:
 
 ```
 php src/StartRobotRemoteServer.php <path-to-the-keywords-implementation-root-directory> <port-on-which-the-server-shall-listen-to>
@@ -123,7 +123,7 @@ php src/StartRobotRemoteServer.php <path-to-the-keywords-implementation-root-dir
 Experimenting with the protocol
 -----
 
-Extra! If you want to play around with the XML-RPC protocol, you can run some 'demo' instance of the remote server code that will print out what is received and sent back by the server: (just modify the file to add more XML messages)
+Extra! If you want to play around with the XML-RPC protocol, you can run some 'demo' instance of the remote server code that will print out what is received and sent back by the server: (just modify the content of `DemoRobotRemoteServer.php` to add more XML messages)
 
 ```
 php src/DemoRobotRemoteServer.php <path-to-the-keywords-implementation-root-directory>
@@ -136,19 +136,19 @@ Things to know about this implementation of the Robot Framework remote protocol
 Keyword definition and execution
 -----
 
-You can define keyword implementations in as much files as you like. Constraints and allowances:
+You can define keyword implementations in as much files as you like. Rules:
 * Function names define the keyword names
 * The functions/keywords must be in classses
 * Any number of classes can be used, several classes per file is OK, class names not matching the file names is OK
-* Any number of files can be used, sub-folders can be used and will be recursively crawled
+* Any number of files can be used, sub-folders can be used and will be crawled recursively
 * Namespaces can be used
-* If the same keyword is declared twice (i.e. two functions with the same name in different classes) then only one of them will be taken into account, and a warning will be issued
+* If the same keyword is declared twice (i.e. two functions with the same name in different classes/files) then only one of them will be taken into account, and a warning will be issued
 
 About the execution:
-* These files will be required when any keyword from the file is requested for the first time; if none of its keyword is ever used, the file won't be required
+* Each given file will be required when any keyword from the file is requested for the first time; if none of its keyword is ever used, the file won't be required
 * **Calls to these functions will be made statically**; `$this` will not be available
 
-`stop_remote_server` keyword
+Stopping the server programmatically
 -----
 
 `stop_remote_server` is implemented and available as a keyword.
@@ -157,7 +157,7 @@ Data: Robot Framework vs. PHP
 -----
 
 * Robot Framework lists are available and will be translated to PHP sequential arrays
-* PHP sequential arrays will be translated back to Robot Framework lists; **the empty array will be considered as a sequential array/list**
+* PHP sequential arrays will be translated back to Robot Framework lists; **the empty PHP array will be considered as a sequential array and thus will be translated as a Robot Framework list**
 * Robot Framework dictionaries are available and will be translated to PHP associative arrays
 * PHP associative arrays will be translated back to Robot Framework dictionaries
 * PHP objects will also be transated back to Robot Framework dictionaries, as per `get_object_vars`
