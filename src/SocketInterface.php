@@ -10,7 +10,7 @@ class SocketInterface {
     public function startSession($serverPort, $verbose) {
 		$serverAddress = 'localhost:'.$serverPort;
 		if ($verbose) {
-			echo('Starting server on '.$serverAddress.'...');
+			echo('Starting server on '.$serverAddress.'...'."\n");
 		}
 
 		$errno = 0;
