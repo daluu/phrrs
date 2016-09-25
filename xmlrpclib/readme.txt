@@ -1,1 +1,0 @@
-Download PHP XML-RPC library from http://phpxmlrpc.sourceforge.net and extract the content of the "lib" folder from the downloaded archive file to the "xmlrpclib" here for this project, as a required dependency.

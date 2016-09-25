@@ -1,0 +1,4 @@
+# Composer doing its stuff
+composer.lock
+composer.phar
+vendor/
