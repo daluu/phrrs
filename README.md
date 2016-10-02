@@ -4,9 +4,11 @@ phrrs - PHp Robot Remote Server (can be pronounced "friss" or "furs"?)
 About this project
 -----
 
-PHP generic remote library server for Robot Framework. 
+PHP generic remote library server for Robot Framework.
 
-This project offers a generic remote server for Robot Framework, implemented in PHP, for use in creating remote libraries. It can alternatively be used for other purposes outside of Robot Framework. 
+This project offers a generic remote server for Robot Framework, implemented in PHP, for use in creating remote libraries. It can alternatively be used for other purposes outside of Robot Framework.
+
+**NOTE:** the current master branch is a total redesign, thanks to PR #10. For those looking for the legacy/original version, you can find it under the `first-poc` branch.
 
 This remote server uses the PHP XML-RPC server from http://phpxmlrpc.sourceforge.net. Using composer will automatically install it as a dependency.
 
